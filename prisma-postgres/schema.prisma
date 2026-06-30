@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Player {
+  id          String       @id @default(cuid())
+  poolId      String?
+  name        String
+  whatsapp    String       @unique
+  pinHash     String       @default("")
+  valorPago   Decimal      @default(0.00) @db.Decimal(10, 2)
+  pool        Pool?        @relation(fields: [poolId], references: [id], onDelete: SetNull)
+  predictions Prediction[]
+  createdAt   DateTime     @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime     @updatedAt @db.Timestamptz(6)
+
+  @@index([poolId])
+}
+
+model Pool {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  pixKey    String   @default("91 98258-5313")
+  pixOwner  String   @default("Rosely Silva")
+  players   Player[]
+  games     Game[]
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+}
+
+model Game {
+  id                          String       @id @default(cuid())
+  poolId                      String?
+  opponent                    String
+  opponentFlag                String       @default("🏁")
+  phase                       String
+  kickoffAt                   DateTime     @db.Timestamptz(6)
+  valorBolao                  Decimal      @default(0.00) @db.Decimal(10, 2)
+  predictionRule              String       @default("Vale apenas para palpites de 1º e 2º tempos.")
+  status                      String       @default("ABERTO")
+  brazilScore                 Int?         @default(0)
+  opponentScore               Int?         @default(0)
+  scoreSourceUrl              String?
+  apiFootballFixtureId        String?
+  apiFootballStatusShort      String?
+  apiFootballStatusLong       String?
+  apiFootballElapsed          Int?
+  scoreLastSyncedAt           DateTime?    @db.Timestamptz(6)
+  scoreSyncStatus             String?
+  scoreSyncError              String?
+  finishedAt                  DateTime?    @db.Timestamptz(6)
+  finalizedPrizeAmount        Decimal?     @db.Decimal(10, 2)
+  finalizedWinningQuotaCount  Int?
+  finalizedWinningShareAmount Decimal?     @db.Decimal(10, 2)
+  finalizedWinningScoreLabel  String?
+  finalizedWinnersJson        String?
+  prizeFinalizedAt            DateTime?    @db.Timestamptz(6)
+  newGameWhatsappSentAt       DateTime?    @db.Timestamptz(6)
+  hidePredictionsUntilLocked  Boolean      @default(true)
+  pool                        Pool?        @relation(fields: [poolId], references: [id], onDelete: SetNull)
+  predictions                 Prediction[]
+  createdAt                   DateTime     @default(now()) @db.Timestamptz(6)
+  updatedAt                   DateTime     @updatedAt @db.Timestamptz(6)
+
+  @@index([poolId])
+}
+
+model Prediction {
+  id            String    @id @default(cuid())
+  playerId      String
+  gameId        String
+  brazilGoals   Int
+  opponentGoals Int
+  paidAt        DateTime? @db.Timestamptz(6)
+  player        Player    @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  game          Game      @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  createdAt     DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime  @updatedAt @db.Timestamptz(6)
+}
+
+model PredictionAudit {
+  id                    String   @id @default(cuid())
+  predictionId          String?
+  playerId              String
+  playerName            String
+  playerWhatsapp        String
+  gameId                String
+  gameLabel             String
+  action                String
+  previousBrazilGoals   Int?
+  previousOpponentGoals Int?
+  nextBrazilGoals       Int?
+  nextOpponentGoals     Int?
+  createdAt             DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([predictionId])
+  @@index([playerId])
+  @@index([gameId])
+  @@index([createdAt])
+}
+
+model AppSetting {
+  key       String   @id
+  value     String
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+}
