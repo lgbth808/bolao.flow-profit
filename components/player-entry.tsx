@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { FormEvent, useEffect, useState } from "react";
 
 type IdentifiedPlayer = {
@@ -147,34 +146,25 @@ export function PlayerEntry() {
   }
 
   return (
-    <main className="login-brand-bg flex min-h-screen items-center px-4 py-5 sm:py-8">
-      <section className="mx-auto flex min-h-[calc(100vh-3rem)] w-full max-w-6xl items-center justify-center lg:justify-end">
-        <div className="w-full max-w-md rounded-lg border border-canary/80 bg-white/95 p-5 shadow-panel backdrop-blur sm:p-7">
-          <Image
-            src="/brand/logo_principal.png"
-            alt="Bet Barão by d. Rosa"
-            width={520}
-            height={520}
-            className="mx-auto h-40 w-auto max-w-full object-contain sm:h-48"
-            priority
-          />
-
-          <div className="mt-3 text-center">
-            <p className="text-xs font-black uppercase text-field">
+    <main className="login-brand-bg flex min-h-screen items-end px-4 pb-4 pt-40 sm:items-center sm:py-8">
+      <section className="mx-auto flex min-h-[calc(100vh-11rem)] w-full max-w-6xl items-end justify-center sm:min-h-[calc(100vh-3rem)] sm:items-center lg:justify-end">
+        <div className="w-full max-w-sm rounded-lg border border-canary/80 bg-white p-4 shadow-panel sm:max-w-md sm:bg-white/95 sm:p-7">
+          <div className="text-center">
+            <p className="text-[0.68rem] font-black uppercase leading-tight text-field sm:text-xs">
               Família Silva, agregados e amigos
             </p>
-            <h1 className="mt-2 text-3xl font-black text-ink sm:text-4xl">
+            <h1 className="mt-2 text-2xl font-black leading-tight text-ink sm:text-4xl">
               Acesso do palpiteiro
             </h1>
-            <p className="mt-2 text-base font-semibold text-coal/70">
+            <p className="mt-2 text-sm font-semibold leading-snug text-coal/70 sm:text-base">
               Digite seu WhatsApp e sua senha de 4 números.
             </p>
-            <p className="mt-2 rounded-md border border-canary/45 bg-mist px-3 py-2 text-sm font-semibold text-coal/75">
+            <p className="mt-2 rounded-md border border-canary/45 bg-mist/90 px-3 py-2 text-xs font-semibold leading-snug text-coal/75 sm:text-sm">
               Se ainda não tiver cadastro, sua conta será criada automaticamente.
             </p>
           </div>
 
-          <form onSubmit={handleIdentify} className="mt-6 grid gap-4">
+          <form onSubmit={handleIdentify} className="mt-4 grid gap-3 sm:mt-6 sm:gap-4">
             <label className="grid gap-1 text-sm font-semibold text-coal">
               WhatsApp
               <input
@@ -185,7 +175,7 @@ export function PlayerEntry() {
                 inputMode="tel"
                 pattern="[0-9()\\s-]*"
                 autoComplete="tel"
-                className="h-11 rounded-md border border-line px-3 text-sm font-normal text-ink outline-none transition focus:border-field focus:ring-2 focus:ring-field/15"
+                className="h-10 rounded-md border border-line px-3 text-base font-normal text-ink outline-none transition focus:border-field focus:ring-2 focus:ring-field/15 sm:h-11 sm:text-sm"
               />
             </label>
             <label className="grid gap-1 text-sm font-semibold text-coal">
@@ -201,13 +191,13 @@ export function PlayerEntry() {
                 autoComplete="one-time-code"
                 type="password"
                 maxLength={4}
-                className="h-11 rounded-md border border-line px-3 text-sm font-normal text-ink outline-none transition focus:border-field focus:ring-2 focus:ring-field/15"
+                className="h-10 rounded-md border border-line px-3 text-base font-normal text-ink outline-none transition focus:border-field focus:ring-2 focus:ring-field/15 sm:h-11 sm:text-sm"
               />
             </label>
             <button
               type="submit"
               disabled={isBusy || !isPinReady}
-              className="h-12 rounded-md bg-field px-4 text-base font-semibold text-white transition hover:bg-field/90 disabled:bg-coal/30"
+              className="h-11 rounded-md bg-field px-4 text-base font-semibold text-white transition hover:bg-field/90 disabled:bg-coal/30 sm:h-12"
             >
               Entrar
             </button>

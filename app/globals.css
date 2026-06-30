@@ -59,7 +59,7 @@ button:disabled {
 
 .login-brand-bg {
   background-image:
-    linear-gradient(135deg, rgba(15, 61, 46, 0.26), rgba(17, 17, 17, 0.12)),
+    linear-gradient(135deg, rgba(255, 246, 229, 0.18), rgba(255, 246, 229, 0.04)),
     url("/brand/background_login.png");
   background-position: center;
   background-size: cover;
@@ -84,7 +84,9 @@ button:disabled {
 @media (max-width: 640px) {
   .login-brand-bg {
     background-image:
-      linear-gradient(180deg, rgba(15, 61, 46, 0.22), rgba(17, 17, 17, 0.1)),
-      url("/brand/background_login_mobile.png");
+      linear-gradient(180deg, rgba(255, 246, 229, 0.16), rgba(255, 246, 229, 0.04)),
+      url("/brand/background_login.png");
+    background-position: 46% top;
+    background-size: auto 100%;
   }
 }
