@@ -32,6 +32,10 @@ const SELECTED_POOL_STORAGE_KEY = "bolao-d-rosa-do-brassssillll-pool";
 const SWITCH_PLAYER_STORAGE_KEY = "bolao-d-rosa-switch-player";
 const PIX_NUMBER = "91 98258-5313";
 const PIX_OWNER = "Rosely Silva";
+const LEGACY_PREDICTION_RULE =
+  "Vale apenas para palpites de 1º e 2º tempos.";
+const CURRENT_PREDICTION_RULE =
+  "Vale para o placar do 1º e 2º tempos + prorrogação, caso haja.";
 
 function BrandIcon({ className = "h-10 w-10" }: { className?: string }) {
   return (
@@ -47,6 +51,10 @@ function BrandIcon({ className = "h-10 w-10" }: { className?: string }) {
 
 function formatDateTime(value: string) {
   return formatBrasiliaDateTime(value);
+}
+
+function displayPredictionRule(value: string) {
+  return value === LEGACY_PREDICTION_RULE ? CURRENT_PREDICTION_RULE : value;
 }
 
 function statusClass(game: PublicGame) {
@@ -948,7 +956,7 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
                         </p>
                       </div>
                       <p className="mt-2 rounded-md border border-field/20 bg-white px-3 py-2 text-sm font-semibold text-ink">
-                        Regra: {game.predictionRule}
+                        Regra: {displayPredictionRule(game.predictionRule)}
                       </p>
                       <div className="mt-2 grid gap-2 sm:grid-cols-[1fr_auto] sm:items-center">
                         <p
@@ -1240,7 +1248,8 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
             </h2>
             <p className="text-sm text-coal/70">
               Resumo visual dos rateios por jogo. A regra de vencedores não foi
-              alterada: vale o placar exato no tempo regulamentar.
+              alterada: vale o placar exato do 1º e 2º tempos + prorrogação,
+              caso haja.
             </p>
           </div>
 

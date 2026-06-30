@@ -66,12 +66,18 @@ type AdminSection =
 type AdminModal = "pool" | "game" | null;
 type PaymentFilter = "TODOS" | "PAGO" | "PENDENTE";
 
-const DEFAULT_PREDICTION_RULE =
+const LEGACY_PREDICTION_RULE =
   "Vale apenas para palpites de 1º e 2º tempos.";
+const DEFAULT_PREDICTION_RULE =
+  "Vale para o placar do 1º e 2º tempos + prorrogação, caso haja.";
 const AUTO_UPDATE_STORAGE_KEY = "bolao-d-rosa-api-football-auto-update";
 
 function formatDateTime(value: string) {
   return formatBrasiliaDateTime(value);
+}
+
+function displayPredictionRule(value: string) {
+  return value === LEGACY_PREDICTION_RULE ? DEFAULT_PREDICTION_RULE : value;
 }
 
 function toDateTimeLocal(value: string) {
@@ -106,8 +112,9 @@ function gamePayload(form: HTMLFormElement) {
     scoreSourceUrl: String(formData.get("scoreSourceUrl") ?? ""),
     apiFootballFixtureId: String(formData.get("apiFootballFixtureId") ?? ""),
     predictionRule:
-      String(formData.get("predictionRule") ?? "").trim() ||
-      DEFAULT_PREDICTION_RULE,
+      displayPredictionRule(
+        String(formData.get("predictionRule") ?? "").trim()
+      ) || DEFAULT_PREDICTION_RULE,
     status: String(formData.get("status") ?? "ABERTO"),
     brazilScore: nullableScore(formData.get("brazilScore")),
     opponentScore: nullableScore(formData.get("opponentScore")),
@@ -1527,7 +1534,7 @@ export function AdminPanel({ initialData }: { initialData: AdminPoolData }) {
                   <Field label="Regra para os palpiteiros">
                     <TextInput
                       name="predictionRule"
-                      defaultValue={game.predictionRule}
+                      defaultValue={displayPredictionRule(game.predictionRule)}
                       required
                     />
                   </Field>

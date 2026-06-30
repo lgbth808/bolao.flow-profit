@@ -10,7 +10,7 @@ import { sendNewGameMessageToPlayers } from "@/lib/whatsapp";
 export const dynamic = "force-dynamic";
 
 const DEFAULT_PREDICTION_RULE =
-  "Vale apenas para palpites de 1º e 2º tempos.";
+  "Vale para o placar do 1º e 2º tempos + prorrogação, caso haja.";
 
 const gameSchema = z.object({
   poolId: z.string().trim().optional(),

@@ -89,7 +89,7 @@ export const tutorialPages: TutorialPageData[] = [
     id: "prize",
     title: "Entenda a premiação",
     text:
-      "Quem acertar o placar oficial do tempo regulamentar, 1º e 2º tempos, divide o prêmio arrecadado entre todos os acertadores.",
+      "Quem acertar o placar oficial do 1º e 2º tempos + prorrogação, caso haja, divide o prêmio arrecadado entre todos os acertadores.",
     image: "/brand/tutorial/tutorial_08_prize.png",
     imageAlt: "Troféu e explicação sobre divisão do prêmio entre acertadores",
     cta: "Ir para pagamento",
