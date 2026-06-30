@@ -19,8 +19,8 @@ export const metadata: Metadata = {
     images: [
       {
         url: "/brand/og_tutorial.png",
-        width: 900,
-        height: 600,
+        width: 1200,
+        height: 630,
         alt: "Tutorial Bet Barão by d. Rosa"
       }
     ]
@@ -101,7 +101,8 @@ export default function TutorialRoute() {
           <div className="rounded-lg border border-canary/30 bg-white/10 p-4">
             <p className="font-black text-canary">Placar certeiro</p>
             <p className="mt-1">
-              Quem acertar o placar oficial divide o prêmio com os acertadores.
+              Quem acertar o placar oficial do 1º e 2º tempos + prorrogação,
+              caso haja, divide o prêmio com os acertadores.
             </p>
           </div>
         </section>

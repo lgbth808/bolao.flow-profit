@@ -25,7 +25,7 @@ export function TutorialPage({
         </span>
         {page.final ? (
           <span className="rounded-full border border-canary bg-white px-3 py-1 text-xs font-black uppercase text-field">
-            Brasil x Noruega
+            🇧🇷 Brasil x Noruega 🇳🇴
           </span>
         ) : null}
       </div>
@@ -48,6 +48,26 @@ export function TutorialPage({
         <p className="mt-3 text-base font-semibold leading-relaxed text-coal/75">
           {page.text}
         </p>
+
+        {page.final ? (
+          <div className="mt-4 rounded-lg border border-canary bg-field px-4 py-4 text-center text-white shadow-sm">
+            <p className="text-xs font-black uppercase tracking-wide text-canary">
+              Jogo em destaque
+            </p>
+            <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
+              <span className="rounded-md bg-white px-3 py-2 text-base font-black text-field md:text-lg">
+                🇧🇷 Brasil
+              </span>
+              <span className="text-lg font-black text-canary">x</span>
+              <span className="rounded-md bg-white px-3 py-2 text-base font-black text-field md:text-lg">
+                Noruega 🇳🇴
+              </span>
+            </div>
+            <p className="mt-2 text-sm font-semibold text-white/85">
+              Abra o bolão e faça seus palpites para esta rodada.
+            </p>
+          </div>
+        ) : null}
 
         {page.bullets?.length ? (
           <ul className="mt-5 grid gap-2">

@@ -129,12 +129,16 @@ export const tutorialPages: TutorialPageData[] = [
     id: "enter-pool",
     title: "Agora é com você!",
     text:
-      "Entre no bolão do jogo Brasil x Noruega, convide a família e faça seus palpites para participar da rodada.",
+      "Entre no bolão do jogo 🇧🇷 Brasil x Noruega 🇳🇴, convide a família e faça seus palpites para participar da rodada.",
     image: "/brand/tutorial/tutorial_12_enter_pool.png",
-    imageAlt: "Arte Bet Barão com D. Rosa, troféu e bola de futebol",
+    imageAlt: "Arte Bet Barão com D. Rosa, troféu, bola de futebol e chamada para Brasil x Noruega",
     cta: "Entrar no Bolão",
     href: "/apostas",
     final: true,
-    bullets: ["Brasil x Noruega", "Quanto mais palpites, mais chances", "Salve o site no celular"]
+    bullets: [
+      "🇧🇷 Brasil x Noruega 🇳🇴",
+      "Quanto mais palpites, mais chances",
+      "Salve o site no celular"
+    ]
   }
 ];
