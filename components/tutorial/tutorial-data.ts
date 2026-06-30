@@ -45,7 +45,7 @@ export const tutorialPages: TutorialPageData[] = [
     id: "login",
     title: "Login com WhatsApp e senha",
     text:
-      "Digite seu WhatsApp com DDD e sua senha numérica de 4 dígitos. Não usamos e-mail, Google ou rede social.",
+      "Digite seu WhatsApp com DDD e sua senha numérica de 4 dígitos para entrar direto no bolão.",
     image: "/brand/tutorial/tutorial_04_login.png",
     imageAlt: "Cartoon explicando login por WhatsApp e senha de quatro números",
     cta: "Continuar",
@@ -60,7 +60,7 @@ export const tutorialPages: TutorialPageData[] = [
     imageAlt: "Tela de login do Bet Barão com criação automática de conta",
     cta: "Próximo",
     bullets: [
-      "Sem cadastro separado",
+      "Criação automática",
       "Nome é pedido só quando precisar",
       "Acesso fica salvo no aparelho"
     ]
@@ -89,7 +89,7 @@ export const tutorialPages: TutorialPageData[] = [
     id: "prize",
     title: "Entenda a premiação",
     text:
-      "Quem acertar o placar até o final da prorrogação, quando houver, divide o prêmio arrecadado entre todos os acertadores.",
+      "Quem acertar o placar oficial do tempo regulamentar, 1º e 2º tempos, divide o prêmio arrecadado entre todos os acertadores.",
     image: "/brand/tutorial/tutorial_08_prize.png",
     imageAlt: "Troféu e explicação sobre divisão do prêmio entre acertadores",
     cta: "Ir para pagamento",

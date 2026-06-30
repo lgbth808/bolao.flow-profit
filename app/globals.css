@@ -58,11 +58,29 @@ button:disabled {
 }
 
 .login-brand-bg {
+  position: relative;
+  isolation: isolate;
+  overflow-x: hidden;
+  background: #fff6e5;
+}
+
+.login-brand-bg::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
   background-image:
-    linear-gradient(135deg, rgba(255, 246, 229, 0.18), rgba(255, 246, 229, 0.04)),
+    linear-gradient(135deg, rgba(255, 246, 229, 0.24), rgba(255, 246, 229, 0.10)),
     url("/brand/background_login.png");
   background-position: center;
+  background-repeat: no-repeat;
   background-size: cover;
+  pointer-events: none;
+}
+
+.login-brand-bg > * {
+  position: relative;
+  z-index: 1;
 }
 
 .admin-brand-bg {
@@ -105,11 +123,11 @@ button:disabled {
 }
 
 @media (max-width: 640px) {
-  .login-brand-bg {
+  .login-brand-bg::before {
     background-image:
-      linear-gradient(180deg, rgba(255, 246, 229, 0.16), rgba(255, 246, 229, 0.04)),
-      url("/brand/background_login.png");
-    background-position: 46% top;
-    background-size: auto 100%;
+      linear-gradient(180deg, rgba(255, 246, 229, 0.42), rgba(255, 246, 229, 0.24)),
+      url("/brand/background_login_mobile.png");
+    background-position: center top;
+    background-size: cover;
   }
 }
