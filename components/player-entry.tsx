@@ -18,6 +18,8 @@ type ApiResult<T> = T & {
 };
 
 const PLAYER_STORAGE_KEY = "bolao-d-rosa-do-brassssillll-player";
+const SELECTED_POOL_STORAGE_KEY = "bolao-d-rosa-do-brassssillll-pool";
+const SWITCH_PLAYER_STORAGE_KEY = "bolao-d-rosa-switch-player";
 
 function formatWhatsappInput(value: string) {
   const digits = value.replace(/\D/g, "");
@@ -53,6 +55,19 @@ export function PlayerEntry() {
   const isPinReady = /^\d{4}$/.test(pin);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const shouldSwitchPlayer =
+      params.get("trocar") === "1" ||
+      window.sessionStorage.getItem(SWITCH_PLAYER_STORAGE_KEY) === "1";
+
+    if (shouldSwitchPlayer) {
+      window.localStorage.removeItem(PLAYER_STORAGE_KEY);
+      window.localStorage.removeItem(SELECTED_POOL_STORAGE_KEY);
+      window.sessionStorage.removeItem(SWITCH_PLAYER_STORAGE_KEY);
+      window.history.replaceState(null, "", "/");
+      return;
+    }
+
     const saved = window.localStorage.getItem(PLAYER_STORAGE_KEY);
 
     if (saved) {
@@ -132,79 +147,25 @@ export function PlayerEntry() {
   }
 
   return (
-    <main className="login-brand-bg min-h-screen px-4 py-5 sm:py-8">
-      <section className="mx-auto grid min-h-[calc(100vh-3rem)] max-w-6xl items-center gap-5 lg:grid-cols-[1fr_0.92fr]">
-        <div className="rounded-lg border border-canary/70 bg-field/95 p-5 text-white shadow-panel backdrop-blur sm:p-7">
+    <main className="login-brand-bg flex min-h-screen items-center px-4 py-5 sm:py-8">
+      <section className="mx-auto flex min-h-[calc(100vh-3rem)] w-full max-w-6xl items-center justify-center lg:justify-end">
+        <div className="w-full max-w-md rounded-lg border border-canary/80 bg-white/95 p-5 shadow-panel backdrop-blur sm:p-7">
           <Image
-            src="/brand/logo_horizontal_dark.png"
+            src="/brand/logo_principal.png"
             alt="Bet Barão by d. Rosa"
-            width={560}
-            height={180}
-            className="h-20 w-auto max-w-full object-contain sm:h-24"
+            width={520}
+            height={520}
+            className="mx-auto h-40 w-auto max-w-full object-contain sm:h-48"
             priority
           />
-          <p className="mt-5 inline-flex rounded-full border border-canary/60 bg-black/20 px-3 py-1 text-xs font-black uppercase text-canary">
-            Família Silva, agregados e amigos
-          </p>
-          <h1 className="mt-4 max-w-xl text-3xl font-black leading-tight text-white sm:text-5xl">
-            Palpites, PIX e prêmio por jogo em um só lugar.
-          </h1>
-          <p className="mt-4 max-w-xl text-base font-semibold leading-relaxed text-white/80">
-            Um bolão familiar privado, organizado pela d. Rosa para acompanhar a
-            Copa com diversão, amizade e placares certeiros.
-          </p>
 
-          <div className="relative mt-6 h-64 overflow-hidden rounded-lg border border-canary/70 bg-white/95 sm:h-72">
-            <Image
-              src="/brand/logo_principal.png"
-              alt="Logo principal Bet Barão by d. Rosa"
-              width={900}
-              height={900}
-              className="absolute left-1/2 top-1/2 h-[26rem] w-[26rem] -translate-x-1/2 -translate-y-1/2 object-contain sm:h-[31rem] sm:w-[31rem]"
-              priority
-            />
-          </div>
-
-          <div className="mt-4 flex items-center gap-3 rounded-md border border-canary/45 bg-black/20 p-3">
-            <Image
-              src="/brand/d_rosa_celular.png"
-              alt="D. Rosa, identidade afetiva do bolão"
-              width={96}
-              height={96}
-              className="h-16 w-16 shrink-0 rounded-md bg-white/90 object-contain"
-            />
-            <p className="text-sm font-semibold leading-snug text-white/80">
-              A d. Rosa organiza o bolão da família com placares, PIX e prêmio
-              dividido entre os acertadores.
+          <div className="mt-3 text-center">
+            <p className="text-xs font-black uppercase text-field">
+              Família Silva, agregados e amigos
             </p>
-          </div>
-
-          <div className="mt-5 grid gap-3 text-sm font-bold text-white/90 sm:grid-cols-3">
-            <p className="rounded-md border border-canary/40 bg-white/10 px-3 py-3">
-              Entre só com WhatsApp e senha de 4 números.
-            </p>
-            <p className="rounded-md border border-canary/40 bg-white/10 px-3 py-3">
-              Escolha o bolão e abra o jogo.
-            </p>
-            <p className="rounded-md border border-canary/40 bg-white/10 px-3 py-3">
-              Seu acesso fica salvo neste aparelho.
-            </p>
-          </div>
-        </div>
-
-        <div className="rounded-lg border border-canary/80 bg-white/95 p-5 shadow-panel backdrop-blur sm:p-7">
-          <div>
-            <Image
-              src="/brand/logo_texto.png"
-              alt="Bet Barão by d. Rosa"
-              width={240}
-              height={86}
-              className="h-16 w-auto object-contain"
-              priority
-            />
-            <h2 className="mt-5 text-3xl font-black text-ink sm:text-4xl">
+            <h1 className="mt-2 text-3xl font-black text-ink sm:text-4xl">
               Acesso do palpiteiro
-            </h2>
+            </h1>
             <p className="mt-2 text-base font-semibold text-coal/70">
               Digite seu WhatsApp e sua senha de 4 números.
             </p>

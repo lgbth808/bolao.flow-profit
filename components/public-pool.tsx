@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import type { MouseEvent } from "react";
 import type { PublicGame, PublicPoolData } from "@/lib/types";
 import { formatBrasiliaDateTime } from "@/lib/datetime";
 import { formatBRL } from "@/lib/money";
@@ -28,8 +29,21 @@ type PinAction =
 
 const PLAYER_STORAGE_KEY = "bolao-d-rosa-do-brassssillll-player";
 const SELECTED_POOL_STORAGE_KEY = "bolao-d-rosa-do-brassssillll-pool";
+const SWITCH_PLAYER_STORAGE_KEY = "bolao-d-rosa-switch-player";
 const PIX_NUMBER = "91 98258-5313";
 const PIX_OWNER = "Rosely Silva";
+
+function BrandIcon({ className = "h-10 w-10" }: { className?: string }) {
+  return (
+    <Image
+      src="/brand/logo_simbolo.png"
+      alt="Bet Barão"
+      width={56}
+      height={56}
+      className={`${className} shrink-0 rounded-md object-contain shadow-sm`}
+    />
+  );
+}
 
 function formatDateTime(value: string) {
   return formatBrasiliaDateTime(value);
@@ -302,9 +316,15 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
 
   const isPinReady = /^\d{4}$/.test(pin);
 
-  function switchPlayer() {
+  function switchPlayer(event: MouseEvent<HTMLAnchorElement>) {
+    event.preventDefault();
     window.localStorage.removeItem(PLAYER_STORAGE_KEY);
     window.localStorage.removeItem(SELECTED_POOL_STORAGE_KEY);
+    window.sessionStorage.setItem(SWITCH_PLAYER_STORAGE_KEY, "1");
+    setPlayer(null);
+    setSelectedGameId("");
+    setEditingPredictionId("");
+    window.location.replace("/?trocar=1");
   }
 
   function openPinModal(action: PinAction) {
@@ -695,9 +715,7 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
         <section className="mx-auto max-w-3xl px-4 py-8">
           <div className="rounded-lg border border-line bg-white p-5 shadow-panel">
             <div className="flex items-center gap-3">
-              <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-md bg-field text-lg font-black text-canary">
-                BB
-              </span>
+              <BrandIcon className="h-14 w-14" />
               <div>
                 <h2 className="text-xl font-semibold text-ink">
                   Entrar ou cadastrar
@@ -723,9 +741,7 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
         <section className="rounded-lg border border-line bg-white p-5 shadow-panel">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="flex items-center gap-3">
-              <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-md bg-field text-lg font-black text-canary">
-                BB
-              </span>
+              <BrandIcon className="h-14 w-14" />
               <div className="flex flex-col gap-1">
                 <h2 className="text-xl font-semibold text-ink">
                   Olá{player ? `, ${player.name}` : ""}. Selecione seu bolão.
@@ -837,9 +853,7 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
               <form onSubmit={handlePrediction} className="mt-5 grid gap-4">
                 {data.games.length === 0 ? (
                   <div className="flex items-center gap-3 rounded-md border border-line bg-mist px-3 py-3 text-sm text-coal/70">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-field text-sm font-black text-canary">
-                      BB
-                    </span>
+                    <BrandIcon />
                     <p>Nenhum jogo cadastrado neste bolão.</p>
                   </div>
                 ) : null}
@@ -1207,9 +1221,7 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
 
           {message ? (
             <div className="mt-4 flex items-center gap-3 rounded-md border border-field/20 bg-field/5 px-3 py-2 text-sm font-semibold text-field">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-field text-xs font-black text-canary">
-                BB
-              </span>
+              <BrandIcon className="h-9 w-9" />
               <p>{message}</p>
             </div>
           ) : null}
@@ -1235,9 +1247,7 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
           <div className="mt-5 grid gap-3 md:grid-cols-2">
             {data.winners.length === 0 ? (
               <div className="flex items-center gap-3 rounded-md border border-line bg-mist px-3 py-4 text-sm text-coal/70">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-field text-sm font-black text-canary">
-                  BB
-                </span>
+                <BrandIcon />
                 <p>Nenhum pagamento de prêmio disponível ainda.</p>
               </div>
             ) : null}
@@ -1478,9 +1488,7 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
           className="fixed inset-0 z-50 flex items-end justify-center bg-ink/45 px-4 py-5 backdrop-blur-sm sm:items-center"
         >
           <div className="w-full max-w-sm rounded-lg border border-line bg-white p-5 text-center shadow-panel">
-            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-md bg-field text-lg font-black text-canary">
-              BB
-            </div>
+            <BrandIcon className="mx-auto mb-3 h-14 w-14" />
             <h3 id="feedback-dialog-title" className="text-lg font-semibold text-ink">
               {feedbackMessage}
             </h3>
