@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import type { PublicGame, PublicPoolData } from "@/lib/types";
 import { formatBrasiliaDateTime } from "@/lib/datetime";
@@ -661,15 +662,66 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
   }
 
   return (
-    <main className="min-h-screen bg-mist/45">
+    <main
+      className="min-h-screen bg-mist/45 bg-cover bg-fixed bg-center"
+      style={{
+        backgroundImage:
+          "linear-gradient(180deg, rgba(255,246,229,0.96), rgba(255,255,255,0.92)), url('/brand/background_public.png')"
+      }}
+    >
+      <header className="border-b border-canary/70 bg-white/95 backdrop-blur">
+        <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3 lg:px-6">
+          <a href="/apostas" className="inline-flex items-center gap-3">
+            <Image
+              src="/brand/logo_simbolo.png"
+              alt="Bet Barão by d. Rosa"
+              width={48}
+              height={48}
+              className="h-11 w-11 object-contain sm:hidden"
+              priority
+            />
+            <Image
+              src="/brand/logo_horizontal.png"
+              alt="Bet Barão by d. Rosa"
+              width={210}
+              height={69}
+              className="hidden h-14 w-auto object-contain sm:block"
+              priority
+            />
+          </a>
+          <Image
+            src="/brand/badge_familia_silva.png"
+            alt="Família Silva"
+            width={48}
+            height={48}
+            className="h-11 w-11 rounded-full object-contain"
+            priority
+          />
+        </div>
+      </header>
+
       {hasLoadedSavedPlayer && !player ? (
         <section className="mx-auto max-w-3xl px-4 py-8">
           <div className="rounded-lg border border-line bg-white p-5 shadow-panel">
-            <h2 className="text-xl font-semibold text-ink">Entrar ou cadastrar</h2>
-            <p className="mt-2 text-sm text-coal/70">
-              A página de apostas é liberada apenas depois do login pelo
-              WhatsApp.
-            </p>
+            <div className="flex items-center gap-3">
+              <Image
+                src="/brand/avatar_d_rosa.png"
+                alt="d. Rosa em cartoon"
+                width={72}
+                height={72}
+                className="h-16 w-16 shrink-0 rounded-full object-contain"
+                priority
+              />
+              <div>
+                <h2 className="text-xl font-semibold text-ink">
+                  Entrar ou cadastrar
+                </h2>
+                <p className="mt-2 text-sm text-coal/70">
+                  A página de apostas é liberada apenas depois do login pelo
+                  WhatsApp.
+                </p>
+              </div>
+            </div>
             <a
               href="/"
               className="mt-5 inline-flex h-11 items-center rounded-md bg-field px-4 text-sm font-semibold text-white transition hover:bg-field/90"
@@ -684,14 +736,24 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
       <div className="mx-auto grid max-w-5xl gap-5 px-4 py-6 lg:px-6">
         <section className="rounded-lg border border-line bg-white p-5 shadow-panel">
           <div className="flex flex-wrap items-start justify-between gap-3">
-            <div className="flex flex-col gap-1">
-              <h2 className="text-xl font-semibold text-ink">
-                Olá{player ? `, ${player.name}` : ""}. Selecione seu bolão.
-              </h2>
-              <p className="text-sm text-coal/70">
-                Quando selecionar, os jogos cadastrados aparecem para gerenciar
-                seus palpites.
-              </p>
+            <div className="flex items-center gap-3">
+              <Image
+                src="/brand/avatar_d_rosa.png"
+                alt="d. Rosa em cartoon"
+                width={64}
+                height={64}
+                className="h-14 w-14 shrink-0 rounded-full object-contain"
+                priority
+              />
+              <div className="flex flex-col gap-1">
+                <h2 className="text-xl font-semibold text-ink">
+                  Olá{player ? `, ${player.name}` : ""}. Selecione seu bolão.
+                </h2>
+                <p className="text-sm text-coal/70">
+                  Quando selecionar, os jogos cadastrados aparecem para gerenciar
+                  seus palpites.
+                </p>
+              </div>
             </div>
             {player ? (
               <a
@@ -793,9 +855,17 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
 
               <form onSubmit={handlePrediction} className="mt-5 grid gap-4">
                 {data.games.length === 0 ? (
-                  <p className="rounded-md border border-line bg-mist px-3 py-3 text-sm text-coal/70">
-                    Nenhum jogo cadastrado neste bolão.
-                  </p>
+                  <div className="flex items-center gap-3 rounded-md border border-line bg-mist px-3 py-3 text-sm text-coal/70">
+                    <Image
+                      src="/brand/avatar_d_rosa.png"
+                      alt=""
+                      width={48}
+                      height={48}
+                      className="h-12 w-12 shrink-0 rounded-full object-contain"
+                      loading="lazy"
+                    />
+                    <p>Nenhum jogo cadastrado neste bolão.</p>
+                  </div>
                 ) : null}
                 {data.games.map((game) => {
                   const isSelected = selectedGameId === game.id;
@@ -1160,9 +1230,17 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
           ) : null}
 
           {message ? (
-            <p className="mt-4 rounded-md border border-field/20 bg-field/5 px-3 py-2 text-sm font-semibold text-field">
-              {message}
-            </p>
+            <div className="mt-4 flex items-center gap-3 rounded-md border border-field/20 bg-field/5 px-3 py-2 text-sm font-semibold text-field">
+              <Image
+                src="/brand/avatar_d_rosa.png"
+                alt=""
+                width={40}
+                height={40}
+                className="h-10 w-10 rounded-full object-contain"
+                loading="lazy"
+              />
+              <p>{message}</p>
+            </div>
           ) : null}
           {error ? (
             <p className="mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">
@@ -1185,9 +1263,17 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
 
           <div className="mt-5 grid gap-3 md:grid-cols-2">
             {data.winners.length === 0 ? (
-              <p className="rounded-md border border-line bg-mist px-3 py-4 text-sm text-coal/70">
-                Nenhum pagamento de prêmio disponível ainda.
-              </p>
+              <div className="flex items-center gap-3 rounded-md border border-line bg-mist px-3 py-4 text-sm text-coal/70">
+                <Image
+                  src="/brand/avatar_d_rosa.png"
+                  alt=""
+                  width={48}
+                  height={48}
+                  className="h-12 w-12 shrink-0 rounded-full object-contain"
+                  loading="lazy"
+                />
+                <p>Nenhum pagamento de prêmio disponível ainda.</p>
+              </div>
             ) : null}
             {data.winners.map((winner) => (
               <article
@@ -1426,6 +1512,14 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
           className="fixed inset-0 z-50 flex items-end justify-center bg-ink/45 px-4 py-5 backdrop-blur-sm sm:items-center"
         >
           <div className="w-full max-w-sm rounded-lg border border-line bg-white p-5 text-center shadow-panel">
+            <Image
+              src="/brand/avatar_d_rosa.png"
+              alt="d. Rosa em cartoon"
+              width={88}
+              height={88}
+              className="mx-auto mb-3 h-20 w-20 rounded-full object-contain"
+              loading="lazy"
+            />
             <h3 id="feedback-dialog-title" className="text-lg font-semibold text-ink">
               {feedbackMessage}
             </h3>

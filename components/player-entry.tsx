@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { FormEvent, useEffect, useState } from "react";
 
 type IdentifiedPlayer = {
@@ -131,19 +132,49 @@ export function PlayerEntry() {
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(15,122,79,0.16),_transparent_34%),linear-gradient(135deg,_#f4f7fb_0%,_#ffffff_48%,_rgba(244,196,48,0.18)_100%)] px-4 py-8">
+    <main
+      className="min-h-screen bg-mist bg-cover bg-center px-4 py-8"
+      style={{
+        backgroundImage:
+          "linear-gradient(135deg, rgba(255,246,229,0.94), rgba(255,255,255,0.88)), url('/brand/background_login.png')"
+      }}
+    >
       <section className="mx-auto grid min-h-[calc(100vh-4rem)] max-w-5xl items-center gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-        <div className="hidden rounded-lg border border-field/20 bg-white/70 p-6 shadow-panel backdrop-blur lg:block">
+        <div className="hidden rounded-lg border border-canary/60 bg-white/80 p-6 shadow-panel backdrop-blur lg:block">
           <div className="flex items-center gap-3">
-            <span className="flex h-14 w-14 items-center justify-center rounded-full bg-field text-3xl shadow-sm">
-              🇧🇷
-            </span>
+            <Image
+              src="/brand/logo_simbolo.png"
+              alt="Símbolo Bet Barão by d. Rosa"
+              width={56}
+              height={56}
+              className="h-14 w-14 rounded-full object-contain shadow-sm"
+              priority
+            />
             <div>
               <p className="text-sm font-semibold uppercase text-field">
-                Copa 2026
+                Família Silva
               </p>
               <p className="text-2xl font-semibold text-ink">
                 Palpites, PIX e prêmio por jogo em um só lugar.
+              </p>
+            </div>
+          </div>
+          <div className="mt-6 flex items-center gap-4 rounded-lg border border-canary/60 bg-mist/80 p-4">
+            <Image
+              src="/brand/avatar_d_rosa.png"
+              alt="d. Rosa em cartoon"
+              width={112}
+              height={112}
+              className="h-24 w-24 shrink-0 rounded-full object-contain"
+              priority
+            />
+            <div>
+              <p className="text-sm font-semibold uppercase text-rose">
+                Rua Barão
+              </p>
+              <p className="mt-1 text-sm font-semibold text-coal/75">
+                A d. Rosa organiza o bolão da família com tradição, futebol e
+                diversão.
               </p>
             </div>
           </div>
@@ -160,11 +191,16 @@ export function PlayerEntry() {
           </div>
         </div>
 
-        <div className="rounded-lg border border-line bg-white p-5 shadow-panel sm:p-6">
-          <div className="flex items-center gap-3">
-            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-canary/35 text-2xl">
-              ⚽
-            </span>
+        <div className="rounded-lg border border-canary/70 bg-white p-5 shadow-panel sm:p-6">
+          <div className="flex flex-col items-center gap-4 text-center">
+            <Image
+              src="/brand/logo_principal.png"
+              alt="Bet Barão by d. Rosa"
+              width={180}
+              height={180}
+              className="h-32 w-32 object-contain sm:h-40 sm:w-40"
+              priority
+            />
             <div>
               <h1 className="text-2xl font-semibold text-ink">
                 Acesso do palpiteiro
@@ -215,9 +251,16 @@ export function PlayerEntry() {
           </form>
 
           {message ? (
-            <p className="mt-4 rounded-md border border-field/20 bg-field/5 px-3 py-2 text-sm font-semibold text-field">
-              {message}
-            </p>
+            <div className="mt-4 flex items-center gap-3 rounded-md border border-field/20 bg-field/5 px-3 py-2 text-sm font-semibold text-field">
+              <Image
+                src="/brand/avatar_d_rosa.png"
+                alt=""
+                width={40}
+                height={40}
+                className="h-10 w-10 rounded-full object-contain"
+              />
+              <p>{message}</p>
+            </div>
           ) : null}
           {error ? (
             <p className="mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">

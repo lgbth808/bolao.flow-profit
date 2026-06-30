@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import type { AdminGame, AdminPoolData } from "@/lib/types";
 import { formatBrasiliaDateTime, toBrasiliaDateTimeLocal } from "@/lib/datetime";
@@ -877,16 +878,40 @@ export function AdminPanel({ initialData }: { initialData: AdminPoolData }) {
   }
 
   return (
-    <main className="min-h-screen bg-mist">
-      <header className="border-b border-line bg-white">
+    <main
+      className="min-h-screen bg-mist bg-cover bg-fixed bg-center"
+      style={{
+        backgroundImage:
+          "linear-gradient(180deg, rgba(255,246,229,0.96), rgba(255,255,255,0.92)), url('/brand/background_admin.png')"
+      }}
+    >
+      <header className="border-b border-canary/70 bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-5 sm:flex-row sm:items-center sm:justify-between lg:px-6">
-          <div>
-            <h1 className="text-2xl font-semibold text-ink sm:text-3xl">
-              Admin · Bolão da d. Rosa do Brassssillll
-            </h1>
-            <p className="mt-1 text-sm text-coal/70">
-              Bolões, jogos, placares, pagamentos, ocultação e conferências.
-            </p>
+          <div className="flex items-center gap-3">
+            <Image
+              src="/brand/logo_simbolo.png"
+              alt="Bet Barão by d. Rosa"
+              width={56}
+              height={56}
+              className="h-12 w-12 shrink-0 object-contain sm:hidden"
+              priority
+            />
+            <Image
+              src="/brand/logo_horizontal.png"
+              alt="Bet Barão by d. Rosa"
+              width={220}
+              height={73}
+              className="hidden h-16 w-auto object-contain sm:block"
+              priority
+            />
+            <div>
+              <h1 className="text-xl font-semibold text-ink sm:text-2xl">
+                Admin
+              </h1>
+              <p className="mt-1 text-sm text-coal/70">
+                Bolões, jogos, placares, pagamentos, ocultação e conferências.
+              </p>
+            </div>
           </div>
           <div className="flex flex-wrap gap-2">
             <a
@@ -2211,7 +2236,7 @@ export function AdminPanel({ initialData }: { initialData: AdminPoolData }) {
                 <Field label="Nome do bolão">
                   <TextInput
                     name="name"
-                    placeholder="Bolão da d. Rosa do BRAASSSSSIIILLLLLLL"
+                    placeholder="Bet Barão by d. Rosa"
                     required
                   />
                 </Field>

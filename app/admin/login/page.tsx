@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 export const dynamic = "force-dynamic";
 
 function safeNext(value?: string | string[]) {
@@ -19,11 +21,25 @@ export default function AdminLoginPage({
   const hasError = Boolean(searchParams?.error);
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-mist px-4 py-8">
-      <section className="w-full max-w-md rounded-lg border border-line bg-white p-6 shadow-panel">
-        <div>
+    <main
+      className="flex min-h-screen items-center justify-center bg-mist bg-cover bg-center px-4 py-8"
+      style={{
+        backgroundImage:
+          "linear-gradient(135deg, rgba(255,246,229,0.94), rgba(255,255,255,0.9)), url('/brand/background_admin.png')"
+      }}
+    >
+      <section className="w-full max-w-md rounded-lg border border-canary/70 bg-white/95 p-6 shadow-panel backdrop-blur">
+        <div className="text-center">
+          <Image
+            src="/brand/logo_principal.png"
+            alt="Bet Barão by d. Rosa"
+            width={150}
+            height={150}
+            className="mx-auto h-32 w-32 object-contain"
+            priority
+          />
           <h1 className="text-2xl font-semibold text-ink">
-            Admin · Bolão da d. Rosa
+            Admin · Bet Barão
           </h1>
           <p className="mt-2 text-sm text-coal/70">
             Digite a senha administrativa para gerenciar jogos, placares e

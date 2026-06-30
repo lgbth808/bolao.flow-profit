@@ -7,17 +7,29 @@ const config: Config = {
     "./lib/**/*.{ts,tsx}"
   ],
   theme: {
+    colors: {
+      transparent: "transparent",
+      current: "currentColor",
+      white: "#FFFFFF",
+      black: "#111111",
+      ink: "#111111",
+      coal: "#111111",
+      field: "#0F3D2E",
+      canary: "#F2C230",
+      mist: "#FFF6E5",
+      line: "#F2C230",
+      rose: "#EB3D8C",
+      red: {
+        50: "#FFF6E5",
+        100: "#FFF6E5",
+        200: "#EB3D8C",
+        300: "#EB3D8C",
+        700: "#EB3D8C"
+      }
+    },
     extend: {
-      colors: {
-        ink: "#14213d",
-        coal: "#1f2937",
-        field: "#0f7a4f",
-        canary: "#f4c430",
-        mist: "#f4f7fb",
-        line: "#d7dde8"
-      },
       boxShadow: {
-        panel: "0 18px 45px rgba(20, 33, 61, 0.08)"
+        panel: "0 18px 45px rgba(17, 17, 17, 0.10)"
       }
     }
   },
