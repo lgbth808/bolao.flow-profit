@@ -32,10 +32,6 @@ const SELECTED_POOL_STORAGE_KEY = "bolao-d-rosa-do-brassssillll-pool";
 const SWITCH_PLAYER_STORAGE_KEY = "bolao-d-rosa-switch-player";
 const PIX_NUMBER = "91 98258-5313";
 const PIX_OWNER = "Rosely Silva";
-const LEGACY_PREDICTION_RULE =
-  "Vale apenas para palpites de 1º e 2º tempos.";
-const CURRENT_PREDICTION_RULE =
-  "Vale para o placar do 1º e 2º tempos + prorrogação, caso haja.";
 
 function BrandIcon({ className = "h-10 w-10" }: { className?: string }) {
   return (
@@ -51,10 +47,6 @@ function BrandIcon({ className = "h-10 w-10" }: { className?: string }) {
 
 function formatDateTime(value: string) {
   return formatBrasiliaDateTime(value);
-}
-
-function displayPredictionRule(value: string) {
-  return value === LEGACY_PREDICTION_RULE ? CURRENT_PREDICTION_RULE : value;
 }
 
 function statusClass(game: PublicGame) {
@@ -133,6 +125,14 @@ function prizeShareText(game: PublicGame) {
   return `${prefix}: ${game.currentWinningQuotaCount} cota(s) em ${game.currentWinningScoreLabel} · ${game.currentWinningShareAmountFormatted} por cota.`;
 }
 
+function winningQuotaLabel(count: number) {
+  return count === 1 ? "1 cota ganhadora" : `${count} cotas ganhadoras`;
+}
+
+function formatGameKickoffLine(value: string) {
+  return formatDateTime(value).replace(",", " •");
+}
+
 function prizeShareClass(game: PublicGame) {
   if (!game.currentWinningScoreLabel) {
     return "border-line bg-mist/70 text-coal/70";
@@ -185,15 +185,10 @@ function CompactGameScore({ game }: { game: PublicGame }) {
       </div>
       {isWinningScore ? (
         <p className="mt-1 text-center text-[11px] font-semibold text-field">
-          {game.currentWinningQuotaCount} cota(s) acertando ·{" "}
+          {winningQuotaLabel(game.currentWinningQuotaCount)} ·{" "}
           {game.currentWinningShareAmountFormatted}
         </p>
       ) : null}
-      <p className="mt-1 text-center text-[11px] font-semibold text-coal/55">
-        {game.apiFootballElapsed
-          ? `${game.apiFootballElapsed}'`
-          : game.apiFootballStatusLong ?? game.statusLabel}
-      </p>
     </div>
   );
 }
@@ -693,29 +688,18 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
     <main
       className="public-brand-bg min-h-screen bg-fixed"
     >
-      <header className="border-b border-canary/70 bg-white/95 backdrop-blur">
-        <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3 lg:px-6">
-          <a href="/apostas" className="inline-flex items-center gap-3">
+      <header className="border-b border-canary/60 bg-white/92 backdrop-blur">
+        <div className="mx-auto flex max-w-5xl justify-center px-4 py-3 lg:px-6">
+          <a href="/apostas" className="inline-flex items-center justify-center">
             <Image
-              src="/brand/logos/logo_horizontal.png"
+              src="/brand/logos/logo_principal.png"
               alt="Bet Barão by d. Rosa"
-              width={260}
-              height={96}
-              className="hidden h-12 w-auto object-contain sm:block"
-              priority
-            />
-            <Image
-              src="/brand/logos/logo_simbolo.png"
-              alt="Bet Barão"
-              width={48}
-              height={48}
-              className="h-11 w-11 rounded-md object-contain shadow-sm sm:hidden"
+              width={240}
+              height={180}
+              className="h-16 w-auto object-contain sm:h-20"
               priority
             />
           </a>
-          <span className="hidden rounded-full border border-canary/70 bg-mist px-3 py-1 text-xs font-black uppercase text-field sm:inline-flex">
-            Família Silva, agregados e amigos
-          </span>
         </div>
       </header>
 
@@ -746,18 +730,18 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
 
       {!hasLoadedSavedPlayer || player ? (
       <div className="mx-auto grid max-w-5xl gap-5 px-4 py-6 lg:px-6">
-        <section className="rounded-lg border border-line bg-white p-5 shadow-panel">
+        <section className="rounded-lg border border-line bg-white/96 p-5 shadow-panel">
           <div className="flex flex-wrap items-start justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <BrandIcon className="h-14 w-14" />
-              <div className="flex flex-col gap-1">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
                 <h2 className="text-xl font-semibold text-ink">
-                  Olá{player ? `, ${player.name}` : ""}. Selecione seu bolão.
+                  Olá{player ? `, ${player.name}` : ""}.
                 </h2>
-                <p className="text-sm text-coal/70">
-                  Quando selecionar, os jogos cadastrados aparecem para gerenciar
-                  seus palpites.
-                </p>
+                {player ? (
+                  <span className="text-sm font-semibold text-coal/60">
+                    {formatBrazilianWhatsapp(player.whatsapp)}
+                  </span>
+                ) : null}
               </div>
             </div>
             {player ? (
@@ -772,29 +756,9 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
           </div>
 
           <div className="mt-5 grid gap-3">
-            {player ? (
-              <p className="text-sm text-coal/70">
-                WhatsApp: {formatBrazilianWhatsapp(player.whatsapp)}
-              </p>
-            ) : null}
             <div className="rounded-lg border border-field/20 bg-gradient-to-r from-field/10 via-white to-canary/20 p-3 shadow-sm sm:col-span-2">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <p className="text-xs font-semibold uppercase text-coal/55">
-                    Bolão selecionado
-                  </p>
-                  <p className="mt-0.5 text-base font-semibold text-ink">
-                    {selectedPool?.name ?? "Escolha um bolão"}
-                  </p>
-                </div>
-                {player?.poolId ? (
-                  <span className="rounded-full border border-field/20 bg-white px-3 py-1 text-xs font-semibold text-field">
-                    Participando
-                  </span>
-                ) : null}
-              </div>
-              <label className="mt-3 grid gap-1 text-sm font-semibold text-coal">
-                <span>Escolher bolão</span>
+              <label className="grid gap-2 text-sm font-semibold text-coal">
+                <span>Selecione o bolão</span>
                 <div className="relative">
                   <select
                     value={selectedPoolId}
@@ -816,10 +780,6 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
                   </span>
                 </div>
               </label>
-              <p className="mt-2 text-xs font-semibold text-coal/60">
-                PIX do bolão: {selectedPool?.pixKey ?? PIX_NUMBER}
-                {selectedPool?.pixOwner ? ` · ${selectedPool.pixOwner}` : ""}
-              </p>
             </div>
 
             {hasLoadedSavedPlayer && !player ? (
@@ -853,9 +813,11 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
           {hasConfirmedPool ? (
             <>
               <div className="mt-4">
-                <span className="inline-flex rounded-full border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold uppercase text-red-700 shadow-sm">
+                <div className="overflow-x-auto pb-1">
+                  <span className="mx-auto flex w-max whitespace-nowrap rounded-full border border-rose/35 bg-rose/8 px-3 py-1.5 text-[10px] font-black uppercase text-rose shadow-sm sm:text-xs">
                   Quanto mais palpites, mais chances de ganhar; você pode fazer quantos quiser
-                </span>
+                  </span>
+                </div>
               </div>
 
               <form onSubmit={handlePrediction} className="mt-5 grid gap-4">
@@ -883,7 +845,7 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
                     <details
                       key={game.id}
                       open={isSelected}
-                      className={`rounded-lg bg-gradient-to-r from-field/10 via-canary/15 to-white p-4 transition ${
+                      className={`rounded-lg bg-gradient-to-r from-field/10 via-canary/15 to-white p-3 transition sm:p-4 ${
                         isSelected
                           ? "border-2 border-field shadow-panel"
                           : "border border-field/20"
@@ -897,8 +859,8 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
                         }}
                         className="cursor-pointer list-none"
                       >
-                        <div className="flex flex-wrap items-center justify-between gap-3">
-                          <div className="flex min-w-[240px] flex-1 items-center gap-3">
+                        <div className="grid gap-3 lg:grid-cols-[minmax(260px,1fr)_minmax(320px,auto)_auto] lg:items-center">
+                          <div className="flex min-w-0 items-center gap-3">
                             <div className="flex -space-x-2">
                               <span
                                 aria-hidden="true"
@@ -913,13 +875,15 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
                                 {game.opponentFlag}
                               </span>
                             </div>
-                            <div>
+                            <div className="min-w-0">
                               <p className="text-lg font-semibold text-ink">
                                 Brasil x {game.opponent}
                               </p>
-                              <p className="mt-1 text-sm text-coal/70">
-                                {game.phase} · Início{" "}
-                                {formatDateTime(game.kickoffAt)}
+                              <p className="mt-0.5 text-sm font-semibold text-coal/70">
+                                {game.phase}
+                              </p>
+                              <p className="mt-0.5 text-sm text-coal/70">
+                                {formatGameKickoffLine(game.kickoffAt)}
                               </p>
                             </div>
                           </div>
@@ -941,55 +905,126 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
                         </div>
                       </summary>
 
-                      <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                        <p className="rounded-md bg-white/75 px-3 py-2 text-xs font-semibold text-coal/70">
-                          Valor por palpite: {game.valorBolaoFormatted}
-                        </p>
-                        <p className="rounded-md bg-white/75 px-3 py-2 text-xs font-semibold text-coal/70">
-                          Prêmio atual: {game.prizeAmountFormatted}
-                        </p>
-                        <p className="rounded-md bg-white/75 px-3 py-2 text-xs font-semibold text-coal/70">
-                          Palpites carregados: {game.predictionCount}
-                        </p>
-                        <p className="rounded-md bg-white/75 px-3 py-2 text-xs font-semibold text-coal/70">
-                          Palpites fecham em {formatDateTime(game.lockAt)}
-                        </p>
-                      </div>
-                      <p className="mt-2 rounded-md border border-field/20 bg-white px-3 py-2 text-sm font-semibold text-ink">
-                        Regra: {displayPredictionRule(game.predictionRule)}
-                      </p>
-                      <div className="mt-2 grid gap-2 sm:grid-cols-[1fr_auto] sm:items-center">
-                        <p
-                          className={`rounded-md border px-3 py-2 text-sm font-semibold ${prizeShareClass(
-                            game
-                          )}`}
-                        >
-                          {prizeShareText(game)}
-                        </p>
-                        <p className="rounded-md bg-white/80 px-3 py-2 text-xs font-semibold text-coal/60">
-                          Última atualização:{" "}
-                          {game.scoreLastSyncedAt
-                            ? formatDateTime(game.scoreLastSyncedAt)
-                            : "ainda não atualizou pela API"}
-                        </p>
-                      </div>
-                      <div className="mt-3 rounded-md border border-white bg-white/85 px-3 py-3">
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <p className="text-sm font-semibold text-ink">
-                            Meus palpites
+                      <div className="mt-3 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+                        <div className="rounded-md bg-white/75 px-2.5 py-2 shadow-sm sm:min-w-[132px]">
+                          <p className="text-[10px] font-black uppercase text-coal/45">
+                            Valor
                           </p>
-                          <button
-                            type="button"
-                            disabled={isBusy || game.isLocked}
-                            onClick={() => {
-                              setSelectedGameId(game.id);
-                              setEditingPredictionId("");
-                            }}
-                            className="h-8 rounded-md bg-field px-3 text-xs font-semibold text-white transition hover:bg-field/90 disabled:bg-coal/30"
-                          >
-                            Novo palpite
-                          </button>
+                          <p className="mt-0.5 text-xs font-semibold text-coal/75">
+                            {game.valorBolaoFormatted}
+                          </p>
                         </div>
+                        <div className="rounded-md bg-white/75 px-2.5 py-2 shadow-sm sm:min-w-[132px]">
+                          <p className="text-[10px] font-black uppercase text-coal/45">
+                            Prêmio
+                          </p>
+                          <p className="mt-0.5 text-xs font-semibold text-field">
+                            {game.prizeAmountFormatted}
+                          </p>
+                        </div>
+                        <div className="rounded-md bg-white/75 px-2.5 py-2 shadow-sm sm:min-w-[132px]">
+                          <p className="text-[10px] font-black uppercase text-coal/45">
+                            Palpites
+                          </p>
+                          <p className="mt-0.5 text-xs font-semibold text-coal/75">
+                            {game.predictionCount}
+                          </p>
+                        </div>
+                        <div className="rounded-md bg-white/75 px-2.5 py-2 shadow-sm sm:min-w-[154px]">
+                          <p className="text-[10px] font-black uppercase text-coal/45">
+                            Fecha em
+                          </p>
+                          <p className="mt-0.5 text-xs font-semibold text-coal/75">
+                            {formatDateTime(game.lockAt)}
+                          </p>
+                        </div>
+                      </div>
+                      <p className="mt-2 rounded-md border border-field/20 bg-white px-3 py-2 text-xs font-semibold leading-relaxed text-ink sm:text-sm">
+                        <span className="font-black">Regra:</span> O placar final
+                        = 1º e 2º tempos + prorrogação, caso haja. Você verá os
+                        palpites dos demais participantes somente após o
+                        fechamento das apostas.
+                      </p>
+                      <div className="mt-3 rounded-lg border border-field/15 bg-white/85 p-3">
+                        <div className="mb-3 flex items-center justify-between gap-3">
+                          <p className="text-sm font-semibold text-ink">
+                            Seu palpite
+                          </p>
+                          <span className="rounded-md bg-white px-2.5 py-1 text-xs font-semibold text-field shadow-sm">
+                            {BRAZIL_FLAG} {brazilGoals || 0} x{" "}
+                            {opponentGoals || 0} {game.opponentFlag}
+                          </span>
+                        </div>
+
+                        <div className="grid gap-3 sm:grid-cols-[1fr_auto_1fr] sm:items-stretch">
+                          <ScorePicker
+                            label="Seleção"
+                            teamName="Brasil"
+                            flag={BRAZIL_FLAG}
+                            value={brazilGoals}
+                            disabled={game.isLocked}
+                            onChange={setBrazilGoals}
+                            onStep={(delta) =>
+                              changeGoal(brazilGoals, setBrazilGoals, delta)
+                            }
+                          />
+                          <div className="flex items-center justify-center">
+                            <span className="rounded-full bg-ink px-3 py-1 text-sm font-semibold text-white">
+                              x
+                            </span>
+                          </div>
+                          <ScorePicker
+                            label="Adversário"
+                            teamName={game.opponent}
+                            flag={game.opponentFlag}
+                            value={opponentGoals}
+                            disabled={game.isLocked}
+                            onChange={setOpponentGoals}
+                            onStep={(delta) =>
+                              changeGoal(opponentGoals, setOpponentGoals, delta)
+                            }
+                          />
+                        </div>
+
+                        <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_auto]">
+                          <button
+                            type="submit"
+                            disabled={
+                              isBusy ||
+                              !player ||
+                              !player.poolId ||
+                              selectedGame?.id !== game.id ||
+                              game.isLocked
+                            }
+                            className="h-11 rounded-md bg-ink px-4 text-sm font-semibold text-white transition hover:bg-ink/90 disabled:bg-coal/30"
+                          >
+                            {editingPredictionId
+                              ? "Atualizar palpite"
+                              : "Salvar palpite"}
+                          </button>
+                          {editingPredictionId && selectedGameId === game.id ? (
+                            <button
+                              type="button"
+                              disabled={isBusy}
+                              onClick={() => setEditingPredictionId("")}
+                              className="h-11 rounded-md border border-line bg-white px-4 text-sm font-semibold text-ink transition hover:border-field hover:text-field disabled:text-coal/35"
+                            >
+                              Cancelar edição
+                            </button>
+                          ) : null}
+                        </div>
+
+                        {game.isLocked ? (
+                          <p className="mt-3 rounded-md bg-canary/25 px-3 py-2 text-sm font-semibold text-ink">
+                            As apostas deste jogo já estão fechadas para edição.
+                          </p>
+                        ) : null}
+                      </div>
+
+                      <div className="mt-3 rounded-md border border-white bg-white/85 px-3 py-3">
+                        <p className="text-sm font-semibold text-ink">
+                          Meus palpites
+                        </p>
                         <div className="mt-3 grid gap-2">
                           {ownPredictions.length === 0 ? (
                             <p className="rounded-md bg-mist px-3 py-2 text-sm text-coal/70">
@@ -1051,12 +1086,11 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
                         <div className="flex flex-wrap items-start justify-between gap-3">
                           <div>
                             <p className="text-sm font-semibold text-ink">
-                              Palpites, prêmio e pagamentos
+                              Palpites
                             </p>
                             <p className="mt-1 text-xs font-semibold text-coal/60">
-                              Só aparecem jogadores que fizeram palpite neste
-                              jogo. Palpites dos outros ficam embaçados até as
-                              apostas fecharem.
+                              Os palpites dos demais participantes serão exibidos
+                              somente após o fechamento das apostas.
                             </p>
                           </div>
                           <div className="flex flex-wrap gap-2 text-xs font-semibold">
@@ -1077,9 +1111,6 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
                                 <th className="rounded-l-md border-y border-l border-line px-3 py-2 font-semibold">
                                   Jogador
                                 </th>
-                                <th className="border-y border-line px-3 py-2 font-semibold">
-                                  WhatsApp
-                                </th>
                                 <th className="rounded-r-md border-y border-r border-line px-3 py-2 font-semibold">
                                   Palpite
                                 </th>
@@ -1089,7 +1120,7 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
                               {gamePlayers.length === 0 ? (
                                 <tr>
                                   <td
-                                    colSpan={3}
+                                    colSpan={2}
                                     className="px-3 py-6 text-center text-sm text-coal/60"
                                   >
                                     Nenhum palpite carregado para este jogo.
@@ -1112,9 +1143,6 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
                                   >
                                     <td className="border-b border-line px-3 py-3 font-semibold text-ink">
                                       {item.name}
-                                    </td>
-                                    <td className="border-b border-line px-3 py-3 text-coal/75">
-                                      {item.maskedWhatsapp}
                                     </td>
                                     <td className="border-b border-line px-3 py-3">
                                       <span
@@ -1144,85 +1172,21 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
                             </tbody>
                           </table>
                         </div>
-                        <p className="mt-3 text-xs font-semibold text-coal/60">
+                        <p
+                          className={`mt-3 rounded-md border px-3 py-2 text-xs font-semibold ${prizeShareClass(
+                            game
+                          )}`}
+                        >
+                          {prizeShareText(game)}
+                        </p>
+                        <p className="mt-2 text-[11px] font-semibold text-coal/55">
                           * indica palpite aguardando confirmação de pagamento.
                         </p>
                       </div>
 
-                      <div className="mt-3 rounded-lg border border-field/15 bg-field/5 p-3">
-                        <div className="mb-3 flex items-center justify-between gap-3">
-                          <p className="text-sm font-semibold text-ink">
-                            Seu placar
-                          </p>
-                          <span className="rounded-md bg-white px-2.5 py-1 text-xs font-semibold text-field shadow-sm">
-                            {BRAZIL_FLAG} {brazilGoals || 0} x{" "}
-                            {opponentGoals || 0} {game.opponentFlag}
-                          </span>
-                        </div>
-
-                        <div className="grid gap-3 sm:grid-cols-[1fr_auto_1fr] sm:items-stretch">
-                          <ScorePicker
-                            label="Seleção"
-                            teamName="Brasil"
-                            flag={BRAZIL_FLAG}
-                            value={brazilGoals}
-                            disabled={game.isLocked}
-                            onChange={setBrazilGoals}
-                            onStep={(delta) =>
-                              changeGoal(brazilGoals, setBrazilGoals, delta)
-                            }
-                          />
-                          <div className="flex items-center justify-center">
-                            <span className="rounded-full bg-ink px-3 py-1 text-sm font-semibold text-white">
-                              x
-                            </span>
-                          </div>
-                          <ScorePicker
-                            label="Adversário"
-                            teamName={game.opponent}
-                            flag={game.opponentFlag}
-                            value={opponentGoals}
-                            disabled={game.isLocked}
-                            onChange={setOpponentGoals}
-                            onStep={(delta) =>
-                              changeGoal(opponentGoals, setOpponentGoals, delta)
-                            }
-                          />
-                        </div>
-
-                        {game.isLocked ? (
-                          <p className="mt-3 rounded-md bg-canary/25 px-3 py-2 text-sm font-semibold text-ink">
-                            As apostas deste jogo já estão fechadas para edição.
-                          </p>
-                        ) : null}
-                      </div>
                     </details>
                   );
                 })}
-
-            <button
-              type="submit"
-              disabled={
-                isBusy ||
-                !player ||
-                !player.poolId ||
-                !selectedGame ||
-                selectedGame.isLocked
-              }
-              className="h-11 rounded-md bg-ink px-4 text-sm font-semibold text-white transition hover:bg-ink/90 disabled:bg-coal/30"
-            >
-              {editingPredictionId ? "Atualizar palpite" : "Salvar novo palpite"}
-            </button>
-            {editingPredictionId ? (
-              <button
-                type="button"
-                disabled={isBusy}
-                onClick={() => setEditingPredictionId("")}
-                className="h-10 rounded-md border border-line bg-white px-4 text-sm font-semibold text-ink transition hover:border-field hover:text-field disabled:text-coal/35"
-              >
-                Cancelar edição
-              </button>
-            ) : null}
               </form>
             </>
           ) : null}
@@ -1241,19 +1205,17 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
         </section>
 
         {hasConfirmedPool ? (
-        <section className="rounded-lg border border-line bg-white p-5 shadow-panel">
-          <div className="flex flex-col gap-1">
-            <h2 className="text-xl font-semibold text-ink">
-              Pagamento de prêmios gerais
-            </h2>
-            <p className="text-sm text-coal/70">
-              Resumo visual dos rateios por jogo. A regra de vencedores não foi
-              alterada: vale o placar exato do 1º e 2º tempos + prorrogação,
-              caso haja.
-            </p>
-          </div>
+        <details className="rounded-lg border border-line bg-white p-4 shadow-panel">
+          <summary className="cursor-pointer list-none text-xl font-semibold text-ink">
+            <div className="flex items-center justify-between gap-3">
+              <span>Pagamentos de prêmios</span>
+              <span className="rounded-full border border-canary/50 px-3 py-1 text-xs font-black uppercase text-field">
+                Abrir
+              </span>
+            </div>
+          </summary>
 
-          <div className="mt-5 grid gap-3 md:grid-cols-2">
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
             {data.winners.length === 0 ? (
               <div className="flex items-center gap-3 rounded-md border border-line bg-mist px-3 py-4 text-sm text-coal/70">
                 <BrandIcon />
@@ -1324,7 +1286,7 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
               </article>
             ))}
           </div>
-        </section>
+        </details>
         ) : null}
       </div>
       ) : null}
