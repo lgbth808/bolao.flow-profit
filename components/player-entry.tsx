@@ -132,36 +132,56 @@ export function PlayerEntry() {
   }
 
   return (
-    <main className="min-h-screen bg-mist px-4 py-6">
-      <section className="mx-auto grid min-h-[calc(100vh-3rem)] max-w-6xl items-center gap-6 lg:grid-cols-[1fr_0.95fr]">
-        <div className="rounded-lg border border-canary bg-field p-5 text-white shadow-panel sm:p-7">
-          <p className="text-sm font-black uppercase tracking-wide text-canary">
-            Família Silva
+    <main className="login-brand-bg min-h-screen px-4 py-5 sm:py-8">
+      <section className="mx-auto grid min-h-[calc(100vh-3rem)] max-w-6xl items-center gap-5 lg:grid-cols-[1fr_0.92fr]">
+        <div className="rounded-lg border border-canary/70 bg-field/95 p-5 text-white shadow-panel backdrop-blur sm:p-7">
+          <Image
+            src="/brand/logo_horizontal_dark.png"
+            alt="Bet Barão by d. Rosa"
+            width={560}
+            height={180}
+            className="h-20 w-auto max-w-full object-contain sm:h-24"
+            priority
+          />
+          <p className="mt-5 inline-flex rounded-full border border-canary/60 bg-black/20 px-3 py-1 text-xs font-black uppercase text-canary">
+            Família Silva, agregados e amigos
           </p>
-          <h1 className="mt-3 text-5xl font-black leading-none tracking-normal sm:text-6xl">
-            bet <span className="block text-canary">BARÃO</span>
-          </h1>
-          <p className="mt-2 inline-flex rounded-md bg-rose px-3 py-1 text-lg font-black text-white">
-            by d. Rosa
-          </p>
-          <p className="mt-5 max-w-xl text-2xl font-black leading-tight text-white">
+          <h1 className="mt-4 max-w-xl text-3xl font-black leading-tight text-white sm:text-5xl">
             Palpites, PIX e prêmio por jogo em um só lugar.
+          </h1>
+          <p className="mt-4 max-w-xl text-base font-semibold leading-relaxed text-white/80">
+            Um bolão familiar privado, organizado pela d. Rosa para acompanhar a
+            Copa com diversão, amizade e placares certeiros.
           </p>
 
-          <div className="relative mt-6 h-72 overflow-hidden rounded-lg border border-canary/70 bg-white">
+          <div className="relative mt-6 h-64 overflow-hidden rounded-lg border border-canary/70 bg-white/95 sm:h-72">
             <Image
               src="/brand/logo_principal.png"
-              alt="Bet Barão by d. Rosa com d. Rosa em cartoon"
+              alt="Logo principal Bet Barão by d. Rosa"
               width={900}
               height={900}
-              className="absolute left-1/2 top-1/2 h-[44rem] w-[44rem] -translate-x-1/2 -translate-y-1/2 object-contain"
+              className="absolute left-1/2 top-1/2 h-[26rem] w-[26rem] -translate-x-1/2 -translate-y-1/2 object-contain sm:h-[31rem] sm:w-[31rem]"
               priority
             />
           </div>
 
+          <div className="mt-4 flex items-center gap-3 rounded-md border border-canary/45 bg-black/20 p-3">
+            <Image
+              src="/brand/d_rosa_celular.png"
+              alt="D. Rosa, identidade afetiva do bolão"
+              width={96}
+              height={96}
+              className="h-16 w-16 shrink-0 rounded-md bg-white/90 object-contain"
+            />
+            <p className="text-sm font-semibold leading-snug text-white/80">
+              A d. Rosa organiza o bolão da família com placares, PIX e prêmio
+              dividido entre os acertadores.
+            </p>
+          </div>
+
           <div className="mt-5 grid gap-3 text-sm font-bold text-white/90 sm:grid-cols-3">
             <p className="rounded-md border border-canary/40 bg-white/10 px-3 py-3">
-              Use WhatsApp e senha de 4 números.
+              Entre só com WhatsApp e senha de 4 números.
             </p>
             <p className="rounded-md border border-canary/40 bg-white/10 px-3 py-3">
               Escolha o bolão e abra o jogo.
@@ -172,16 +192,24 @@ export function PlayerEntry() {
           </div>
         </div>
 
-        <div className="rounded-lg border border-canary/80 bg-white p-5 shadow-panel sm:p-7">
+        <div className="rounded-lg border border-canary/80 bg-white/95 p-5 shadow-panel backdrop-blur sm:p-7">
           <div>
-            <p className="text-sm font-black uppercase text-field">
-              Bet Barão
-            </p>
-            <h2 className="mt-2 text-3xl font-black text-ink sm:text-4xl">
+            <Image
+              src="/brand/logo_texto.png"
+              alt="Bet Barão by d. Rosa"
+              width={240}
+              height={86}
+              className="h-16 w-auto object-contain"
+              priority
+            />
+            <h2 className="mt-5 text-3xl font-black text-ink sm:text-4xl">
               Acesso do palpiteiro
             </h2>
             <p className="mt-2 text-base font-semibold text-coal/70">
-              Digite WhatsApp e senha para continuar.
+              Digite seu WhatsApp e sua senha de 4 números.
+            </p>
+            <p className="mt-2 rounded-md border border-canary/45 bg-mist px-3 py-2 text-sm font-semibold text-coal/75">
+              Se ainda não tiver cadastro, sua conta será criada automaticamente.
             </p>
           </div>
 
@@ -193,9 +221,9 @@ export function PlayerEntry() {
                 onChange={(event) => setWhatsapp(formatWhatsappInput(event.target.value))}
                 placeholder="(91) 98258-5313"
                 type="tel"
-                inputMode="numeric"
+                inputMode="tel"
                 pattern="[0-9()\\s-]*"
-                autoComplete="tel-national"
+                autoComplete="tel"
                 className="h-11 rounded-md border border-line px-3 text-sm font-normal text-ink outline-none transition focus:border-field focus:ring-2 focus:ring-field/15"
               />
             </label>
@@ -254,8 +282,7 @@ export function PlayerEntry() {
                   Primeiro acesso
                 </h2>
                 <p className="mt-1 text-sm text-coal/70">
-                  Este WhatsApp ainda não existe. Informe o nome para criar o
-                  cadastro.
+                  Informe como seu nome deve aparecer no bolão.
                 </p>
               </div>
               <button

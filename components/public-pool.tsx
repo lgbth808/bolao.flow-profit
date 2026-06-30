@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import type { PublicGame, PublicPoolData } from "@/lib/types";
 import { formatBrasiliaDateTime } from "@/lib/datetime";
@@ -662,29 +663,30 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
 
   return (
     <main
-      className="min-h-screen bg-mist/45 bg-cover bg-fixed bg-center"
-      style={{
-        backgroundImage:
-          "linear-gradient(180deg, rgba(255,246,229,0.96), rgba(255,255,255,0.92)), url('/brand/background_public.png')"
-      }}
+      className="public-brand-bg min-h-screen bg-fixed"
     >
       <header className="border-b border-canary/70 bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3 lg:px-6">
           <a href="/apostas" className="inline-flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-md bg-field text-base font-black text-canary shadow-sm">
-              BB
-            </span>
-            <span className="leading-tight">
-              <span className="block text-xl font-black text-ink">
-                bet <span className="text-field">BARÃO</span>
-              </span>
-              <span className="block text-xs font-black uppercase text-rose">
-                by d. Rosa
-              </span>
-            </span>
+            <Image
+              src="/brand/logo_horizontal.png"
+              alt="Bet Barão by d. Rosa"
+              width={260}
+              height={96}
+              className="hidden h-12 w-auto object-contain sm:block"
+              priority
+            />
+            <Image
+              src="/brand/logo_simbolo.png"
+              alt="Bet Barão"
+              width={48}
+              height={48}
+              className="h-11 w-11 rounded-md object-contain shadow-sm sm:hidden"
+              priority
+            />
           </a>
           <span className="hidden rounded-full border border-canary/70 bg-mist px-3 py-1 text-xs font-black uppercase text-field sm:inline-flex">
-            Família Silva
+            Família Silva, agregados e amigos
           </span>
         </div>
       </header>

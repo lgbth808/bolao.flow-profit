@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 export const dynamic = "force-dynamic";
 
 function safeNext(value?: string | string[]) {
@@ -20,19 +22,21 @@ export default function AdminLoginPage({
 
   return (
     <main
-      className="flex min-h-screen items-center justify-center bg-mist bg-cover bg-center px-4 py-8"
-      style={{
-        backgroundImage:
-          "linear-gradient(135deg, rgba(255,246,229,0.94), rgba(255,255,255,0.9)), url('/brand/background_admin.png')"
-      }}
+      className="admin-brand-bg flex min-h-screen items-center justify-center px-4 py-8"
     >
       <section className="w-full max-w-md rounded-lg border border-canary/70 bg-white/95 p-6 shadow-panel backdrop-blur">
         <div className="text-center">
-          <p className="text-sm font-black uppercase text-field">Família Silva</p>
-          <h1 className="mt-2 text-3xl font-black text-ink">
-            bet <span className="text-field">BARÃO</span>
-          </h1>
-          <p className="mt-1 text-lg font-black text-rose">by d. Rosa</p>
+          <Image
+            src="/brand/logo_horizontal.png"
+            alt="Bet Barão by d. Rosa"
+            width={320}
+            height={120}
+            className="mx-auto h-20 w-auto object-contain"
+            priority
+          />
+          <p className="mt-3 text-xs font-black uppercase text-field">
+            Administração do bolão familiar
+          </p>
           <p className="mt-2 text-sm text-coal/70">
             Digite a senha administrativa para gerenciar jogos, placares e
             pagamentos.

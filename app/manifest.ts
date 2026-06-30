@@ -4,30 +4,20 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Bet Barão by d. Rosa",
     short_name: "Bet Barão",
-    description: "O bolão da Família Silva.",
+    description: "O bolão da família Silva, agregados e amigos.",
     start_url: "/",
     display: "standalone",
     background_color: "#FFF6E5",
     theme_color: "#0F3D2E",
     icons: [
       {
-        src: "/brand/icone_app_128.png",
-        sizes: "128x128",
+        src: "/brand/favicon.png",
+        sizes: "192x192",
         type: "image/png"
       },
       {
-        src: "/brand/icone_app_256.png",
-        sizes: "256x256",
-        type: "image/png"
-      },
-      {
-        src: "/brand/icone_app_512.png",
+        src: "/brand/logo_simbolo.png",
         sizes: "512x512",
-        type: "image/png"
-      },
-      {
-        src: "/brand/icone_app_1024.png",
-        sizes: "1024x1024",
         type: "image/png"
       }
     ]

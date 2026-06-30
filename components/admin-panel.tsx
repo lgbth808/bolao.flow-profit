@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import type { AdminGame, AdminPoolData } from "@/lib/types";
 import { formatBrasiliaDateTime, toBrasiliaDateTimeLocal } from "@/lib/datetime";
@@ -878,18 +879,19 @@ export function AdminPanel({ initialData }: { initialData: AdminPoolData }) {
 
   return (
     <main
-      className="min-h-screen bg-mist bg-cover bg-fixed bg-center"
-      style={{
-        backgroundImage:
-          "linear-gradient(180deg, rgba(255,246,229,0.96), rgba(255,255,255,0.92)), url('/brand/background_admin.png')"
-      }}
+      className="admin-brand-bg min-h-screen bg-fixed"
     >
       <header className="border-b border-canary/70 bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-5 sm:flex-row sm:items-center sm:justify-between lg:px-6">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-field text-lg font-black text-canary shadow-sm">
-              BB
-            </div>
+            <Image
+              src="/brand/logo_simbolo.png"
+              alt="Símbolo Bet Barão"
+              width={56}
+              height={56}
+              className="h-12 w-12 shrink-0 rounded-md object-contain shadow-sm"
+              priority
+            />
             <div>
               <h1 className="text-xl font-black text-ink sm:text-2xl">
                 bet <span className="text-field">BARÃO</span>{" "}
