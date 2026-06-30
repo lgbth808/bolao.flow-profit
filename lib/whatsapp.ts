@@ -1,5 +1,6 @@
 import { prisma } from "./prisma";
 import { getSetting, setSetting } from "./settings";
+import { formatBrasiliaDateTime } from "./datetime";
 
 export const WHATSAPP_CONFIG_SETTING = "whatsappEvolutionConfig";
 
@@ -168,11 +169,7 @@ function formatKickoff(value: Date | string | undefined) {
     return "Data a confirmar";
   }
 
-  return new Intl.DateTimeFormat("pt-BR", {
-    dateStyle: "short",
-    timeStyle: "short",
-    timeZone: "America/Belem"
-  }).format(new Date(value));
+  return formatBrasiliaDateTime(value);
 }
 
 function firstWarning(results: WhatsappSendResult[]) {

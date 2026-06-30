@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import type { AdminGame, AdminPoolData } from "@/lib/types";
+import { formatBrasiliaDateTime, toBrasiliaDateTimeLocal } from "@/lib/datetime";
 import { getOpponentFlag, WORLD_CUP_2026_TEAMS } from "@/lib/flags";
 
 type ApiResult<T> = T & {
@@ -69,16 +70,11 @@ const DEFAULT_PREDICTION_RULE =
 const AUTO_UPDATE_STORAGE_KEY = "bolao-d-rosa-api-football-auto-update";
 
 function formatDateTime(value: string) {
-  return new Intl.DateTimeFormat("pt-BR", {
-    dateStyle: "short",
-    timeStyle: "short"
-  }).format(new Date(value));
+  return formatBrasiliaDateTime(value);
 }
 
 function toDateTimeLocal(value: string) {
-  const date = new Date(value);
-  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
-  return local.toISOString().slice(0, 16);
+  return toBrasiliaDateTimeLocal(value);
 }
 
 function nullableScore(value: FormDataEntryValue | null) {

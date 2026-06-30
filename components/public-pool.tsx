@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import type { PublicGame, PublicPoolData } from "@/lib/types";
+import { formatBrasiliaDateTime } from "@/lib/datetime";
 import { formatBRL } from "@/lib/money";
 import { formatBrazilianWhatsapp } from "@/lib/phone";
 import { BRAZIL_FLAG } from "@/lib/flags";
@@ -30,10 +31,7 @@ const PIX_NUMBER = "91 98258-5313";
 const PIX_OWNER = "Rosely Silva";
 
 function formatDateTime(value: string) {
-  return new Intl.DateTimeFormat("pt-BR", {
-    dateStyle: "short",
-    timeStyle: "short"
-  }).format(new Date(value));
+  return formatBrasiliaDateTime(value);
 }
 
 function statusClass(game: PublicGame) {

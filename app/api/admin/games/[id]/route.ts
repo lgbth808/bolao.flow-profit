@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { fail, ok, readJson } from "@/lib/api";
+import { parseBrasiliaDateTimeInput } from "@/lib/datetime";
 import { getOpponentFlag } from "@/lib/flags";
 import { normalizeCurrencyInput } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
@@ -56,7 +57,9 @@ export async function PATCH(
     const data = {
       ...input,
       opponentFlag: input.opponent ? getOpponentFlag(input.opponent) : undefined,
-      kickoffAt: input.kickoffAt ? new Date(input.kickoffAt) : undefined,
+      kickoffAt: input.kickoffAt
+        ? parseBrasiliaDateTimeInput(input.kickoffAt)
+        : undefined,
       valorBolao:
         input.valorBolao === undefined
           ? undefined

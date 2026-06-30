@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { fail, ok, readJson } from "@/lib/api";
+import { parseBrasiliaDateTimeInput } from "@/lib/datetime";
 import { getOpponentFlag } from "@/lib/flags";
 import { normalizeCurrencyInput } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
@@ -55,7 +56,7 @@ function normalizeOptionalText(value?: string) {
 export async function POST(request: Request) {
   try {
     const input = gameSchema.parse(await readJson(request));
-    const kickoffAt = new Date(input.kickoffAt);
+    const kickoffAt = parseBrasiliaDateTimeInput(input.kickoffAt);
 
     if (Number.isNaN(kickoffAt.getTime())) {
       return fail("Data/hora do jogo inválida.", 400);
