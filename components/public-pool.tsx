@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import type { PublicGame, PublicPoolData } from "@/lib/types";
 import { formatBrasiliaDateTime } from "@/lib/datetime";
@@ -672,31 +671,21 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
       <header className="border-b border-canary/70 bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3 lg:px-6">
           <a href="/apostas" className="inline-flex items-center gap-3">
-            <Image
-              src="/brand/logo_simbolo.png"
-              alt="Bet Barão by d. Rosa"
-              width={48}
-              height={48}
-              className="h-11 w-11 object-contain sm:hidden"
-              priority
-            />
-            <Image
-              src="/brand/logo_horizontal.png"
-              alt="Bet Barão by d. Rosa"
-              width={210}
-              height={69}
-              className="hidden h-14 w-auto object-contain sm:block"
-              priority
-            />
+            <span className="flex h-11 w-11 items-center justify-center rounded-md bg-field text-base font-black text-canary shadow-sm">
+              BB
+            </span>
+            <span className="leading-tight">
+              <span className="block text-xl font-black text-ink">
+                bet <span className="text-field">BARÃO</span>
+              </span>
+              <span className="block text-xs font-black uppercase text-rose">
+                by d. Rosa
+              </span>
+            </span>
           </a>
-          <Image
-            src="/brand/badge_familia_silva.png"
-            alt="Família Silva"
-            width={48}
-            height={48}
-            className="h-11 w-11 rounded-full object-contain"
-            priority
-          />
+          <span className="hidden rounded-full border border-canary/70 bg-mist px-3 py-1 text-xs font-black uppercase text-field sm:inline-flex">
+            Família Silva
+          </span>
         </div>
       </header>
 
@@ -704,14 +693,9 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
         <section className="mx-auto max-w-3xl px-4 py-8">
           <div className="rounded-lg border border-line bg-white p-5 shadow-panel">
             <div className="flex items-center gap-3">
-              <Image
-                src="/brand/avatar_d_rosa.png"
-                alt="d. Rosa em cartoon"
-                width={72}
-                height={72}
-                className="h-16 w-16 shrink-0 rounded-full object-contain"
-                priority
-              />
+              <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-md bg-field text-lg font-black text-canary">
+                BB
+              </span>
               <div>
                 <h2 className="text-xl font-semibold text-ink">
                   Entrar ou cadastrar
@@ -737,14 +721,9 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
         <section className="rounded-lg border border-line bg-white p-5 shadow-panel">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="flex items-center gap-3">
-              <Image
-                src="/brand/avatar_d_rosa.png"
-                alt="d. Rosa em cartoon"
-                width={64}
-                height={64}
-                className="h-14 w-14 shrink-0 rounded-full object-contain"
-                priority
-              />
+              <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-md bg-field text-lg font-black text-canary">
+                BB
+              </span>
               <div className="flex flex-col gap-1">
                 <h2 className="text-xl font-semibold text-ink">
                   Olá{player ? `, ${player.name}` : ""}. Selecione seu bolão.
@@ -856,14 +835,9 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
               <form onSubmit={handlePrediction} className="mt-5 grid gap-4">
                 {data.games.length === 0 ? (
                   <div className="flex items-center gap-3 rounded-md border border-line bg-mist px-3 py-3 text-sm text-coal/70">
-                    <Image
-                      src="/brand/avatar_d_rosa.png"
-                      alt=""
-                      width={48}
-                      height={48}
-                      className="h-12 w-12 shrink-0 rounded-full object-contain"
-                      loading="lazy"
-                    />
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-field text-sm font-black text-canary">
+                      BB
+                    </span>
                     <p>Nenhum jogo cadastrado neste bolão.</p>
                   </div>
                 ) : null}
@@ -1231,14 +1205,9 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
 
           {message ? (
             <div className="mt-4 flex items-center gap-3 rounded-md border border-field/20 bg-field/5 px-3 py-2 text-sm font-semibold text-field">
-              <Image
-                src="/brand/avatar_d_rosa.png"
-                alt=""
-                width={40}
-                height={40}
-                className="h-10 w-10 rounded-full object-contain"
-                loading="lazy"
-              />
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-field text-xs font-black text-canary">
+                BB
+              </span>
               <p>{message}</p>
             </div>
           ) : null}
@@ -1264,14 +1233,9 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
           <div className="mt-5 grid gap-3 md:grid-cols-2">
             {data.winners.length === 0 ? (
               <div className="flex items-center gap-3 rounded-md border border-line bg-mist px-3 py-4 text-sm text-coal/70">
-                <Image
-                  src="/brand/avatar_d_rosa.png"
-                  alt=""
-                  width={48}
-                  height={48}
-                  className="h-12 w-12 shrink-0 rounded-full object-contain"
-                  loading="lazy"
-                />
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-field text-sm font-black text-canary">
+                  BB
+                </span>
                 <p>Nenhum pagamento de prêmio disponível ainda.</p>
               </div>
             ) : null}
@@ -1512,14 +1476,9 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
           className="fixed inset-0 z-50 flex items-end justify-center bg-ink/45 px-4 py-5 backdrop-blur-sm sm:items-center"
         >
           <div className="w-full max-w-sm rounded-lg border border-line bg-white p-5 text-center shadow-panel">
-            <Image
-              src="/brand/avatar_d_rosa.png"
-              alt="d. Rosa em cartoon"
-              width={88}
-              height={88}
-              className="mx-auto mb-3 h-20 w-20 rounded-full object-contain"
-              loading="lazy"
-            />
+            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-md bg-field text-lg font-black text-canary">
+              BB
+            </div>
             <h3 id="feedback-dialog-title" className="text-lg font-semibold text-ink">
               {feedbackMessage}
             </h3>

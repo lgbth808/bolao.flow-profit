@@ -132,83 +132,57 @@ export function PlayerEntry() {
   }
 
   return (
-    <main
-      className="min-h-screen bg-mist bg-cover bg-center px-4 py-8"
-      style={{
-        backgroundImage:
-          "linear-gradient(135deg, rgba(255,246,229,0.94), rgba(255,255,255,0.88)), url('/brand/background_login.png')"
-      }}
-    >
-      <section className="mx-auto grid min-h-[calc(100vh-4rem)] max-w-5xl items-center gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-        <div className="hidden rounded-lg border border-canary/60 bg-white/80 p-6 shadow-panel backdrop-blur lg:block">
-          <div className="flex items-center gap-3">
+    <main className="min-h-screen bg-mist px-4 py-6">
+      <section className="mx-auto grid min-h-[calc(100vh-3rem)] max-w-6xl items-center gap-6 lg:grid-cols-[1fr_0.95fr]">
+        <div className="rounded-lg border border-canary bg-field p-5 text-white shadow-panel sm:p-7">
+          <p className="text-sm font-black uppercase tracking-wide text-canary">
+            Família Silva
+          </p>
+          <h1 className="mt-3 text-5xl font-black leading-none tracking-normal sm:text-6xl">
+            bet <span className="block text-canary">BARÃO</span>
+          </h1>
+          <p className="mt-2 inline-flex rounded-md bg-rose px-3 py-1 text-lg font-black text-white">
+            by d. Rosa
+          </p>
+          <p className="mt-5 max-w-xl text-2xl font-black leading-tight text-white">
+            Palpites, PIX e prêmio por jogo em um só lugar.
+          </p>
+
+          <div className="relative mt-6 h-72 overflow-hidden rounded-lg border border-canary/70 bg-white">
             <Image
-              src="/brand/logo_simbolo.png"
-              alt="Símbolo Bet Barão by d. Rosa"
-              width={56}
-              height={56}
-              className="h-14 w-14 rounded-full object-contain shadow-sm"
+              src="/brand/logo_principal.png"
+              alt="Bet Barão by d. Rosa com d. Rosa em cartoon"
+              width={900}
+              height={900}
+              className="absolute left-1/2 top-1/2 h-[44rem] w-[44rem] -translate-x-1/2 -translate-y-1/2 object-contain"
               priority
             />
-            <div>
-              <p className="text-sm font-semibold uppercase text-field">
-                Família Silva
-              </p>
-              <p className="text-2xl font-semibold text-ink">
-                Palpites, PIX e prêmio por jogo em um só lugar.
-              </p>
-            </div>
           </div>
-          <div className="mt-6 flex items-center gap-4 rounded-lg border border-canary/60 bg-mist/80 p-4">
-            <Image
-              src="/brand/avatar_d_rosa.png"
-              alt="d. Rosa em cartoon"
-              width={112}
-              height={112}
-              className="h-24 w-24 shrink-0 rounded-full object-contain"
-              priority
-            />
-            <div>
-              <p className="text-sm font-semibold uppercase text-rose">
-                Rua Barão
-              </p>
-              <p className="mt-1 text-sm font-semibold text-coal/75">
-                A d. Rosa organiza o bolão da família com tradição, futebol e
-                diversão.
-              </p>
-            </div>
-          </div>
-          <div className="mt-6 grid gap-3 text-sm font-semibold text-coal/75">
-            <p className="rounded-md bg-white px-3 py-3 shadow-sm">
-              Use apenas seu WhatsApp e sua senha de 4 números.
+
+          <div className="mt-5 grid gap-3 text-sm font-bold text-white/90 sm:grid-cols-3">
+            <p className="rounded-md border border-canary/40 bg-white/10 px-3 py-3">
+              Use WhatsApp e senha de 4 números.
             </p>
-            <p className="rounded-md bg-white px-3 py-3 shadow-sm">
-              Depois de entrar, escolha o bolão e abra o jogo desejado.
+            <p className="rounded-md border border-canary/40 bg-white/10 px-3 py-3">
+              Escolha o bolão e abra o jogo.
             </p>
-            <p className="rounded-md bg-white px-3 py-3 shadow-sm">
-              Seu acesso fica salvo neste aparelho para os próximos palpites.
+            <p className="rounded-md border border-canary/40 bg-white/10 px-3 py-3">
+              Seu acesso fica salvo neste aparelho.
             </p>
           </div>
         </div>
 
-        <div className="rounded-lg border border-canary/70 bg-white p-5 shadow-panel sm:p-6">
-          <div className="flex flex-col items-center gap-4 text-center">
-            <Image
-              src="/brand/logo_principal.png"
-              alt="Bet Barão by d. Rosa"
-              width={180}
-              height={180}
-              className="h-32 w-32 object-contain sm:h-40 sm:w-40"
-              priority
-            />
-            <div>
-              <h1 className="text-2xl font-semibold text-ink">
-                Acesso do palpiteiro
-              </h1>
-              <p className="mt-1 text-sm text-coal/70">
-                Digite WhatsApp e senha para continuar.
-              </p>
-            </div>
+        <div className="rounded-lg border border-canary/80 bg-white p-5 shadow-panel sm:p-7">
+          <div>
+            <p className="text-sm font-black uppercase text-field">
+              Bet Barão
+            </p>
+            <h2 className="mt-2 text-3xl font-black text-ink sm:text-4xl">
+              Acesso do palpiteiro
+            </h2>
+            <p className="mt-2 text-base font-semibold text-coal/70">
+              Digite WhatsApp e senha para continuar.
+            </p>
           </div>
 
           <form onSubmit={handleIdentify} className="mt-6 grid gap-4">
@@ -251,16 +225,9 @@ export function PlayerEntry() {
           </form>
 
           {message ? (
-            <div className="mt-4 flex items-center gap-3 rounded-md border border-field/20 bg-field/5 px-3 py-2 text-sm font-semibold text-field">
-              <Image
-                src="/brand/avatar_d_rosa.png"
-                alt=""
-                width={40}
-                height={40}
-                className="h-10 w-10 rounded-full object-contain"
-              />
-              <p>{message}</p>
-            </div>
+            <p className="mt-4 rounded-md border border-field/20 bg-field/5 px-3 py-2 text-sm font-semibold text-field">
+              {message}
+            </p>
           ) : null}
           {error ? (
             <p className="mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">

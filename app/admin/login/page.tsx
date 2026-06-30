@@ -1,5 +1,3 @@
-import Image from "next/image";
-
 export const dynamic = "force-dynamic";
 
 function safeNext(value?: string | string[]) {
@@ -30,17 +28,11 @@ export default function AdminLoginPage({
     >
       <section className="w-full max-w-md rounded-lg border border-canary/70 bg-white/95 p-6 shadow-panel backdrop-blur">
         <div className="text-center">
-          <Image
-            src="/brand/logo_principal.png"
-            alt="Bet Barão by d. Rosa"
-            width={150}
-            height={150}
-            className="mx-auto h-32 w-32 object-contain"
-            priority
-          />
-          <h1 className="text-2xl font-semibold text-ink">
-            Admin · Bet Barão
+          <p className="text-sm font-black uppercase text-field">Família Silva</p>
+          <h1 className="mt-2 text-3xl font-black text-ink">
+            bet <span className="text-field">BARÃO</span>
           </h1>
+          <p className="mt-1 text-lg font-black text-rose">by d. Rosa</p>
           <p className="mt-2 text-sm text-coal/70">
             Digite a senha administrativa para gerenciar jogos, placares e
             pagamentos.
