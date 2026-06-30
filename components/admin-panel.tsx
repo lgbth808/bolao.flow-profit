@@ -190,18 +190,30 @@ function SelectInput(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
 }
 
 function OpponentField({
-  defaultValue = ""
+  defaultValue = "",
+  value,
+  onValueChange
 }: {
   defaultValue?: string;
+  value?: string;
+  onValueChange?: (value: string) => void;
 }) {
   const opponentOptions = WORLD_CUP_2026_TEAMS.filter(
     (team) => team.name !== "Brasil"
   );
-  const [opponent, setOpponent] = useState(defaultValue);
+  const [internalOpponent, setInternalOpponent] = useState(defaultValue);
+  const opponent = value ?? internalOpponent;
   const hasKnownOpponent = opponentOptions.some(
     (team) => team.name === opponent
   );
   const isCustomOpponent = opponent !== "" && !hasKnownOpponent;
+  function handleOpponentChange(nextValue: string) {
+    if (value === undefined) {
+      setInternalOpponent(nextValue);
+    }
+
+    onValueChange?.(nextValue);
+  }
 
   return (
     <Field label="Adversário">
@@ -212,7 +224,7 @@ function OpponentField({
         <SelectInput
           name="opponent"
           value={opponent}
-          onChange={(event) => setOpponent(event.target.value)}
+          onChange={(event) => handleOpponentChange(event.target.value)}
           required
         >
           <option value="">Selecione a seleção</option>
@@ -276,6 +288,14 @@ export function AdminPanel({ initialData }: { initialData: AdminPoolData }) {
     initialData.adminPools[0]?.id ?? ""
   );
   const [fixtureValue, setFixtureValue] = useState("20,00");
+  const [newGameOpponent, setNewGameOpponent] = useState("");
+  const [newGamePhase, setNewGamePhase] = useState("");
+  const [newGameKickoffAt, setNewGameKickoffAt] = useState("");
+  const [newGameFixtureId, setNewGameFixtureId] = useState("");
+  const [gameModalFixtureCandidates, setGameModalFixtureCandidates] = useState<
+    FixtureCandidate[]
+  >([]);
+  const [gameModalFixtureStatus, setGameModalFixtureStatus] = useState("");
   const [autoUpdateEnabled, setAutoUpdateEnabled] = useState(false);
   const [financeSearch, setFinanceSearch] = useState("");
   const [financeGameId, setFinanceGameId] = useState("");
@@ -420,6 +440,7 @@ export function AdminPanel({ initialData }: { initialData: AdminPoolData }) {
     event.preventDefault();
     await submitJson("/api/admin/games", "POST", gamePayload(event.currentTarget), "Jogo cadastrado.");
     event.currentTarget.reset();
+    resetNewGameFormState();
     setActiveModal(null);
   }
 
@@ -587,6 +608,77 @@ export function AdminPanel({ initialData }: { initialData: AdminPoolData }) {
         hidePredictionsUntilLocked: true
       },
       `Jogo Brasil x ${fixture.opponent} cadastrado.`
+    );
+  }
+
+  function resetNewGameFormState() {
+    setNewGameOpponent("");
+    setNewGamePhase("");
+    setNewGameKickoffAt("");
+    setNewGameFixtureId("");
+    setGameModalFixtureCandidates([]);
+    setGameModalFixtureStatus("");
+  }
+
+  function openGameModal() {
+    resetNewGameFormState();
+    setActiveModal("game");
+  }
+
+  async function searchFixturesForGameModal(form: HTMLFormElement | null) {
+    if (!form) {
+      return;
+    }
+
+    const formData = new FormData(form);
+    const kickoffAt = String(formData.get("kickoffAt") ?? "");
+
+    setIsBusy(true);
+    setError("");
+    setGameModalFixtureStatus("");
+    setGameModalFixtureCandidates([]);
+
+    try {
+      const response = await fetch("/api/admin/fixtures/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          leagueId: String(formData.get("apiFootballLeagueId") ?? ""),
+          season: String(formData.get("apiFootballSeason") ?? ""),
+          teamId:
+            String(formData.get("apiFootballBrazilTeamId") ?? "") ||
+            String(formData.get("apiFootballOpponentTeamId") ?? ""),
+          date: kickoffAt ? kickoffAt.slice(0, 10) : ""
+        })
+      });
+      const result = await readApi<{ fixtures: FixtureCandidate[] }>(response);
+
+      setGameModalFixtureCandidates(result.fixtures);
+      setGameModalFixtureStatus(
+        result.fixtures.length === 0
+          ? "Nenhum fixture encontrado para esses dados."
+          : "Selecione o fixture correto para preencher o jogo."
+      );
+    } catch (caught) {
+      setGameModalFixtureStatus("");
+      setError(
+        caught instanceof Error
+          ? caught.message
+          : "Erro ao buscar fixture para este jogo."
+      );
+    } finally {
+      setIsBusy(false);
+    }
+  }
+
+  function applyFixtureToGameModal(fixture: FixtureCandidate) {
+    setNewGameOpponent(fixture.opponent);
+    setNewGamePhase(fixture.round);
+    setNewGameKickoffAt(toDateTimeLocal(fixture.kickoffAt));
+    setNewGameFixtureId(String(fixture.fixtureId));
+    setGameModalFixtureCandidates([]);
+    setGameModalFixtureStatus(
+      `Fixture ${fixture.fixtureId} aplicado ao cadastro do jogo.`
     );
   }
 
@@ -1340,7 +1432,7 @@ export function AdminPanel({ initialData }: { initialData: AdminPoolData }) {
           <button
             type="button"
             disabled={isBusy}
-            onClick={() => setActiveModal("game")}
+            onClick={openGameModal}
             className="mt-5 h-11 rounded-md bg-field px-4 text-sm font-semibold text-white transition hover:bg-field/90 disabled:bg-coal/30"
           >
             Cadastrar jogo
@@ -1642,44 +1734,44 @@ export function AdminPanel({ initialData }: { initialData: AdminPoolData }) {
               </div>
             ) : null}
             {data.adminPlayers.map((player) => (
-              <details key={player.id} className="rounded-md border border-line p-3">
-                <summary className="cursor-pointer text-sm font-semibold text-ink">
-                  {player.name} · {player.whatsappFormatted}
-                </summary>
+              <div
+                key={player.id}
+                className="rounded-lg border border-line bg-white p-3 shadow-sm"
+              >
                 <form
                   onSubmit={(event) => handleUpdatePlayer(event, player.id)}
-                  className="mt-3"
+                  className="grid gap-3 xl:grid-cols-[minmax(150px,1fr)_minmax(160px,1fr)_minmax(150px,1fr)_auto] xl:items-end"
                 >
-                  <div className="grid gap-3 md:grid-cols-3">
-                    <Field label="Nome">
-                      <TextInput name="name" defaultValue={player.name} required />
-                    </Field>
-                    <Field label="WhatsApp">
-                      <TextInput
-                        name="whatsapp"
-                        defaultValue={player.whatsappFormatted}
-                        required
-                      />
-                    </Field>
-                    <Field label="Bolão">
-                      <TextInput
-                        value={player.poolName ?? "Ainda sem bolão"}
-                        readOnly
-                      />
-                    </Field>
-                  </div>
-                  <div className="mt-3 flex flex-wrap gap-2">
+                  <Field label="Nome">
+                    <TextInput name="name" defaultValue={player.name} required />
+                  </Field>
+                  <Field label="WhatsApp">
+                    <TextInput
+                      name="whatsapp"
+                      defaultValue={player.whatsappFormatted}
+                      inputMode="numeric"
+                      autoComplete="tel-national"
+                      required
+                    />
+                  </Field>
+                  <Field label="Bolão">
+                    <TextInput
+                      value={player.poolName ?? "Ainda sem bolão"}
+                      readOnly
+                    />
+                  </Field>
+                  <div className="flex flex-wrap gap-2 xl:justify-end">
                     <button
                       disabled={isBusy}
-                      className="h-10 rounded-md bg-field px-4 text-sm font-semibold text-white transition hover:bg-field/90 disabled:bg-coal/30"
+                      className="h-10 rounded-md bg-field px-3 text-sm font-semibold text-white transition hover:bg-field/90 disabled:bg-coal/30"
                     >
-                      Salvar palpiteiro
+                      Salvar
                     </button>
                     <button
                       type="button"
                       disabled={isBusy}
                       onClick={() => resetPlayerPin(player.id)}
-                      className="h-10 rounded-md border border-line bg-white px-4 text-sm font-semibold text-ink transition hover:border-canary disabled:text-coal/35"
+                      className="h-10 rounded-md border border-line bg-white px-3 text-sm font-semibold text-ink transition hover:border-canary disabled:text-coal/35"
                     >
                       Resetar senha
                     </button>
@@ -1687,16 +1779,23 @@ export function AdminPanel({ initialData }: { initialData: AdminPoolData }) {
                       type="button"
                       disabled={isBusy}
                       onClick={() => deletePlayer(player.id)}
-                      className="h-10 rounded-md border border-red-200 bg-red-50 px-4 text-sm font-semibold text-red-700 transition hover:bg-red-100 disabled:text-red-300"
+                      className="h-10 rounded-md border border-red-200 bg-red-50 px-3 text-sm font-semibold text-red-700 transition hover:bg-red-100 disabled:text-red-300"
                     >
-                      Excluir palpiteiro
+                      Excluir
                     </button>
                   </div>
                 </form>
 
-                <div className="mt-4 rounded-md border border-field/15 bg-field/5 p-3">
-                  <p className="text-sm font-semibold text-ink">Conta corrente</p>
-                  <div className="mt-3 grid gap-2 text-sm">
+                <div className="mt-3 rounded-md border border-field/15 bg-field/5 p-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-sm font-semibold text-ink">
+                      Conta corrente
+                    </p>
+                    <span className="rounded-md bg-white px-2.5 py-1 text-xs font-semibold text-coal/65">
+                      {player.whatsappFormatted}
+                    </span>
+                  </div>
+                  <div className="mt-3 grid gap-2 text-sm md:grid-cols-2">
                     {financeEntriesForPlayer(player.id).length === 0 ? (
                       <p className="rounded-md bg-white px-3 py-2 text-coal/70">
                         Nenhum palpite financeiro registrado.
@@ -1718,7 +1817,7 @@ export function AdminPanel({ initialData }: { initialData: AdminPoolData }) {
                     ))}
                   </div>
                 </div>
-              </details>
+              </div>
             ))}
           </div>
         </section>
@@ -2100,7 +2199,10 @@ export function AdminPanel({ initialData }: { initialData: AdminPoolData }) {
               </div>
               <button
                 type="button"
-                onClick={() => setActiveModal(null)}
+                onClick={() => {
+                  resetNewGameFormState();
+                  setActiveModal(null);
+                }}
                 className="flex h-9 w-9 items-center justify-center rounded-md border border-line text-lg font-semibold text-coal transition hover:border-field hover:text-field"
                 aria-label="Fechar cadastro"
               >
@@ -2156,12 +2258,27 @@ export function AdminPanel({ initialData }: { initialData: AdminPoolData }) {
                     ))}
                   </SelectInput>
                 </Field>
-                <OpponentField />
+                <OpponentField
+                  value={newGameOpponent}
+                  onValueChange={setNewGameOpponent}
+                />
                 <Field label="Fase">
-                  <TextInput name="phase" placeholder="Fase de grupos" required />
+                  <TextInput
+                    name="phase"
+                    value={newGamePhase}
+                    onChange={(event) => setNewGamePhase(event.target.value)}
+                    placeholder="Fase de grupos"
+                    required
+                  />
                 </Field>
                 <Field label="Data/hora">
-                  <TextInput name="kickoffAt" type="datetime-local" required />
+                  <TextInput
+                    name="kickoffAt"
+                    type="datetime-local"
+                    value={newGameKickoffAt}
+                    onChange={(event) => setNewGameKickoffAt(event.target.value)}
+                    required
+                  />
                 </Field>
                 <Field label="Valor do bolão">
                   <TextInput
@@ -2199,6 +2316,10 @@ export function AdminPanel({ initialData }: { initialData: AdminPoolData }) {
                     <Field label="Fixture ID API-Football">
                       <TextInput
                         name="apiFootballFixtureId"
+                        value={newGameFixtureId}
+                        onChange={(event) =>
+                          setNewGameFixtureId(event.target.value)
+                        }
                         inputMode="numeric"
                         placeholder="Ex.: 1234567"
                       />
@@ -2240,16 +2361,54 @@ export function AdminPanel({ initialData }: { initialData: AdminPoolData }) {
                     </Field>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveModal(null);
-                      setActiveSection("api");
-                    }}
-                    className="mt-3 h-9 rounded-md border border-field/20 bg-white px-3 text-xs font-semibold text-field transition hover:bg-field/10"
-                  >
-                    Abrir buscador API-Football
-                  </button>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      disabled={isBusy}
+                      onClick={(event) =>
+                        searchFixturesForGameModal(event.currentTarget.form)
+                      }
+                      className="h-9 rounded-md bg-field px-3 text-xs font-semibold text-white transition hover:bg-field/90 disabled:bg-coal/30"
+                    >
+                      Buscar fixture e preencher
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        resetNewGameFormState();
+                        setActiveModal(null);
+                        setActiveSection("api");
+                      }}
+                      className="h-9 rounded-md border border-field/20 bg-white px-3 text-xs font-semibold text-field transition hover:bg-field/10"
+                    >
+                      Abrir buscador API-Football
+                    </button>
+                  </div>
+                  {gameModalFixtureStatus ? (
+                    <p className="mt-3 rounded-md border border-canary/30 bg-canary/15 px-3 py-2 text-xs font-semibold text-ink">
+                      {gameModalFixtureStatus}
+                    </p>
+                  ) : null}
+                  {gameModalFixtureCandidates.length > 0 ? (
+                    <div className="mt-3 grid gap-2">
+                      {gameModalFixtureCandidates.map((fixture) => (
+                        <button
+                          key={fixture.fixtureId}
+                          type="button"
+                          onClick={() => applyFixtureToGameModal(fixture)}
+                          className="rounded-md border border-line bg-white px-3 py-2 text-left text-xs font-semibold text-ink transition hover:border-field hover:bg-field/5"
+                        >
+                          <span className="block text-sm">
+                            Brasil x {fixture.opponent}
+                          </span>
+                          <span className="mt-1 block text-coal/65">
+                            Fixture {fixture.fixtureId} · {fixture.round} ·{" "}
+                            {formatDateTime(fixture.kickoffAt)}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
                 <Field label="Regra para os palpiteiros">
                   <TextInput

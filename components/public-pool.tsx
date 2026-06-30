@@ -124,13 +124,23 @@ function prizeShareClass(game: PublicGame) {
   return "border-field/25 bg-field/10 text-field";
 }
 
+function displayScore(game: PublicGame) {
+  const match = game.scoreLabel.match(/(\d+)\s*x\s*(\d+)/i);
+
+  return {
+    brazil: game.brazilScore ?? (match ? Number(match[1]) : 0),
+    opponent: game.opponentScore ?? (match ? Number(match[2]) : 0)
+  };
+}
+
 function CompactGameScore({ game }: { game: PublicGame }) {
   const isWinningScore = game.currentWinningQuotaCount > 0;
+  const score = displayScore(game);
   const scoreBoxClass = `flex h-11 min-w-[2.75rem] items-center justify-center rounded-lg border px-3 text-lg font-bold shadow-sm ${
     isWinningScore
       ? "border-field/25 bg-field text-white"
       : "border-line bg-white text-ink"
-  } ${game.isScoreRevealed ? "" : "select-none blur-[3px]"}`;
+  }`;
 
   return (
     <div className="w-full max-w-md rounded-lg border border-white/70 bg-white/80 px-3 py-2 shadow-sm md:min-w-[360px]">
@@ -143,9 +153,9 @@ function CompactGameScore({ game }: { game: PublicGame }) {
             {BRAZIL_FLAG} Brasil
           </p>
         </div>
-        <span className={scoreBoxClass}>{game.brazilScore ?? 0}</span>
+        <span className={scoreBoxClass}>{score.brazil}</span>
         <span className="text-center text-sm font-bold text-coal/50">x</span>
-        <span className={scoreBoxClass}>{game.opponentScore ?? 0}</span>
+        <span className={scoreBoxClass}>{score.opponent}</span>
         <div className="min-w-0 text-left">
           <p className="truncate text-xs font-semibold text-ink">
             {game.opponentFlag} {game.opponent}
@@ -158,6 +168,11 @@ function CompactGameScore({ game }: { game: PublicGame }) {
           {game.currentWinningShareAmountFormatted}
         </p>
       ) : null}
+      <p className="mt-1 text-center text-[11px] font-semibold text-coal/55">
+        {game.apiFootballElapsed
+          ? `${game.apiFootballElapsed}'`
+          : game.apiFootballStatusLong ?? game.statusLabel}
+      </p>
     </div>
   );
 }
@@ -613,23 +628,6 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
   const selectedPixKey = selectedPool?.pixKey ?? PIX_NUMBER;
   const selectedPixOwner = selectedPool?.pixOwner ?? PIX_OWNER;
   const hasConfirmedPool = Boolean(player?.poolId);
-  const selectedWinner = useMemo(
-    () => data.winners.find((winner) => winner.gameId === selectedGame?.id),
-    [data.winners, selectedGame?.id]
-  );
-  const selectedGamePlayers = useMemo(() => {
-    if (!selectedGame) {
-      return [];
-    }
-
-    return data.players.filter((item) => {
-      const prediction = item.predictions.find(
-        (entry) => entry.gameId === selectedGame.id
-      );
-
-      return Boolean(prediction && prediction.predictionCount > 0);
-    });
-  }, [data.players, selectedGame]);
 
   function predictionResultLabel(prediction: {
     brazilGoals: number;
@@ -665,20 +663,7 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
   }
 
   return (
-    <main className="min-h-screen bg-white">
-      <header className="border-b border-line bg-white">
-        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-5 lg:px-6">
-          <div>
-            <h1 className="text-2xl font-semibold text-ink sm:text-3xl">
-              Bolão da d. Rosa do Brassssillll
-            </h1>
-            <p className="mt-1 text-sm text-coal/70">
-              Jogos do Brasil na Copa, palpites, arrecadação e rateio.
-            </p>
-          </div>
-        </div>
-      </header>
-
+    <main className="min-h-screen bg-mist/45">
       {hasLoadedSavedPlayer && !player ? (
         <section className="mx-auto max-w-3xl px-4 py-8">
           <div className="rounded-lg border border-line bg-white p-5 shadow-panel">
@@ -698,7 +683,7 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
       ) : null}
 
       {!hasLoadedSavedPlayer || player ? (
-      <div className="mx-auto grid max-w-7xl gap-5 px-4 py-6 lg:grid-cols-[1.05fr_1.45fr] lg:px-6">
+      <div className="mx-auto grid max-w-5xl gap-5 px-4 py-6 lg:px-6">
         <section className="rounded-lg border border-line bg-white p-5 shadow-panel">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="flex flex-col gap-1">
@@ -819,6 +804,13 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
                   const ownPredictions = data.currentPlayerPredictions.filter(
                     (prediction) => prediction.gameId === game.id
                   );
+                  const gamePlayers = data.players.filter((item) => {
+                    const prediction = item.predictions.find(
+                      (entry) => entry.gameId === game.id
+                    );
+
+                    return Boolean(prediction && prediction.predictionCount > 0);
+                  });
                   const lockCountdown = countdownToLock(game.lockAt, now);
 
                   return (
@@ -900,50 +892,19 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
                       <p className="mt-2 rounded-md border border-field/20 bg-white px-3 py-2 text-sm font-semibold text-ink">
                         Regra: {game.predictionRule}
                       </p>
-                      <div className="mt-2 rounded-md border border-white bg-white/85 px-3 py-3">
-                        <div className="flex flex-wrap items-center justify-between gap-3">
-                          <p className="text-xs font-semibold uppercase text-coal/60">
-                            Placar do jogo
-                          </p>
-                          <div className="flex flex-wrap items-center gap-2">
-                            <span
-                              className={`rounded-md px-3 py-1 text-sm font-semibold text-white ${
-                                game.currentWinningQuotaCount > 0
-                                  ? "bg-field"
-                                  : "bg-ink"
-                              } ${
-                                game.isScoreRevealed
-                                  ? ""
-                                  : "select-none blur-[3px]"
-                              }`}
-                            >
-                              {BRAZIL_FLAG} {game.scoreLabel}{" "}
-                              {game.opponentFlag}
-                            </span>
-                            <span className="rounded-md bg-mist px-2.5 py-1 text-xs font-semibold text-coal">
-                              {game.apiFootballElapsed
-                                ? `${game.apiFootballElapsed}'`
-                                : game.apiFootballStatusLong ?? game.statusLabel}
-                            </span>
-                          </div>
-                        </div>
-                        <p className="mt-2 text-xs font-semibold text-coal/65">
-                          {game.isScoreRevealed
-                            ? "Placar revelado: as apostas já estão fechadas para este jogo."
-                            : "O placar fica embaçado e será revelado 10 minutos antes do jogo, quando as apostas fecham."}
-                        </p>
-                        <p className="mt-1 text-xs font-semibold text-coal/55">
-                          Última atualização:{" "}
-                          {game.scoreLastSyncedAt
-                            ? formatDateTime(game.scoreLastSyncedAt)
-                            : "ainda não atualizou pela API"}
-                        </p>
+                      <div className="mt-2 grid gap-2 sm:grid-cols-[1fr_auto] sm:items-center">
                         <p
-                          className={`mt-3 rounded-md border px-3 py-2 text-sm font-semibold ${prizeShareClass(
+                          className={`rounded-md border px-3 py-2 text-sm font-semibold ${prizeShareClass(
                             game
                           )}`}
                         >
                           {prizeShareText(game)}
+                        </p>
+                        <p className="rounded-md bg-white/80 px-3 py-2 text-xs font-semibold text-coal/60">
+                          Última atualização:{" "}
+                          {game.scoreLastSyncedAt
+                            ? formatDateTime(game.scoreLastSyncedAt)
+                            : "ainda não atualizou pela API"}
                         </p>
                       </div>
                       <div className="mt-3 rounded-md border border-white bg-white/85 px-3 py-3">
@@ -1018,6 +979,108 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
                             );
                           })}
                         </div>
+                      </div>
+
+                      <div className="mt-3 rounded-md border border-white bg-white/85 px-3 py-3">
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <div>
+                            <p className="text-sm font-semibold text-ink">
+                              Palpites, prêmio e pagamentos
+                            </p>
+                            <p className="mt-1 text-xs font-semibold text-coal/60">
+                              Só aparecem jogadores que fizeram palpite neste
+                              jogo. Palpites dos outros ficam embaçados até as
+                              apostas fecharem.
+                            </p>
+                          </div>
+                          <div className="flex flex-wrap gap-2 text-xs font-semibold">
+                            <span className="rounded-md bg-field/10 px-2.5 py-1 text-field">
+                              {game.prizeAmountFormatted}
+                            </span>
+                            <span className="rounded-md bg-mist px-2.5 py-1 text-coal">
+                              {game.paidPredictionCount} pagos ·{" "}
+                              {game.pendingPaymentCount} pendentes
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="mt-3 overflow-x-auto">
+                          <table className="min-w-full border-separate border-spacing-0 text-left text-sm">
+                            <thead>
+                              <tr className="bg-mist text-xs uppercase text-coal/65">
+                                <th className="rounded-l-md border-y border-l border-line px-3 py-2 font-semibold">
+                                  Jogador
+                                </th>
+                                <th className="border-y border-line px-3 py-2 font-semibold">
+                                  WhatsApp
+                                </th>
+                                <th className="rounded-r-md border-y border-r border-line px-3 py-2 font-semibold">
+                                  Palpite
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {gamePlayers.length === 0 ? (
+                                <tr>
+                                  <td
+                                    colSpan={3}
+                                    className="px-3 py-6 text-center text-sm text-coal/60"
+                                  >
+                                    Nenhum palpite carregado para este jogo.
+                                  </td>
+                                </tr>
+                              ) : null}
+                              {gamePlayers.map((item) => {
+                                const prediction = item.predictions.find(
+                                  (entry) => entry.gameId === game.id
+                                );
+
+                                return (
+                                  <tr
+                                    key={item.id}
+                                    className={
+                                      prediction?.isCurrentlyWinning
+                                        ? "bg-field/5"
+                                        : undefined
+                                    }
+                                  >
+                                    <td className="border-b border-line px-3 py-3 font-semibold text-ink">
+                                      {item.name}
+                                    </td>
+                                    <td className="border-b border-line px-3 py-3 text-coal/75">
+                                      {item.maskedWhatsapp}
+                                    </td>
+                                    <td className="border-b border-line px-3 py-3">
+                                      <span
+                                        className={`rounded-md px-2.5 py-1 text-xs font-semibold ${
+                                          prediction?.isHidden
+                                            ? "select-none bg-canary/20 text-ink blur-[2px]"
+                                            : prediction?.isCurrentlyWinning
+                                              ? "bg-field/10 text-field"
+                                            : prediction?.isOwn
+                                              ? "bg-field/10 text-field"
+                                            : "bg-mist text-coal"
+                                        }`}
+                                        title={
+                                          prediction?.isHidden
+                                            ? "Palpite de outro jogador fica embaçado na página pública"
+                                            : prediction?.pendingPaymentCount
+                                              ? "Aguardando confirmação de pagamento"
+                                              : undefined
+                                        }
+                                      >
+                                        {prediction?.display ?? "-"}
+                                      </span>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                        <p className="mt-3 text-xs font-semibold text-coal/60">
+                          * indica palpite aguardando confirmação de pagamento.
+                        </p>
                       </div>
 
                       <div className="mt-3 rounded-lg border border-field/15 bg-field/5 p-3">
@@ -1111,224 +1174,88 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
         </section>
 
         {hasConfirmedPool ? (
-          <>
         <section className="rounded-lg border border-line bg-white p-5 shadow-panel">
           <div className="flex flex-col gap-1">
             <h2 className="text-xl font-semibold text-ink">
-              Palpites e prêmio deste jogo
+              Pagamento de prêmios gerais
             </h2>
             <p className="text-sm text-coal/70">
-              Cada jogo tem prêmio próprio; ao finalizar, as apostas seguintes
-              começam com novo prêmio.
+              Resumo visual dos rateios por jogo. A regra de vencedores não foi
+              alterada: vale o placar exato no tempo regulamentar.
             </p>
           </div>
 
-          {selectedGame ? (
-            <div className="mt-4 grid gap-3 sm:grid-cols-4">
-              <div className="rounded-md border border-line bg-mist/70 p-3">
-                <p className="text-xs font-semibold uppercase text-coal/60">
-                  Prêmio do jogo
-                </p>
-                <p className="mt-1 text-2xl font-semibold text-field">
-                  {selectedGame.prizeAmountFormatted}
-                </p>
-              </div>
-              <div className="rounded-md border border-line bg-mist/70 p-3">
-                <p className="text-xs font-semibold uppercase text-coal/60">
-                  Palpites
-                </p>
-                <p className="mt-1 text-2xl font-semibold text-ink">
-                  {selectedGame.predictionCount}
-                </p>
-              </div>
-              <div className="rounded-md border border-line bg-mist/70 p-3">
-                <p className="text-xs font-semibold uppercase text-coal/60">
-                  Pagamentos
-                </p>
-                <p className="mt-1 text-sm font-semibold text-ink">
-                  {selectedGame.paidPredictionCount} pagos ·{" "}
-                  {selectedGame.pendingPaymentCount} pendentes
-                </p>
-              </div>
-              <div
-                className={`rounded-md border p-3 ${prizeShareClass(
-                  selectedGame
-                )}`}
-              >
-                <p className="text-xs font-semibold uppercase">
-                  Rateio atual
-                </p>
-                <p className="mt-1 text-sm font-semibold">
-                  {selectedGame.currentWinningQuotaCount > 0
-                    ? `${selectedGame.currentWinningQuotaCount} cota(s) · ${selectedGame.currentWinningShareAmountFormatted}`
-                    : selectedGame.currentPrizeStatus === "FINAL"
-                      ? "Sem vencedor"
-                      : "Aguardando acertos"}
-                </p>
-              </div>
-            </div>
-          ) : null}
-
-          <p className="mt-4 rounded-md border border-canary/30 bg-canary/15 px-3 py-2 text-sm font-semibold text-ink">
-            Você vê seus próprios palpites normalmente. Os palpites dos outros
-            jogadores ficam embaçados enquanto o jogo não começar (10min antes).
-          </p>
-
-          <div className="mt-5 overflow-x-auto">
-            <table className="min-w-full border-separate border-spacing-0 text-left text-sm">
-              <thead>
-                <tr className="bg-mist text-xs uppercase text-coal/65">
-                  <th className="rounded-l-md border-y border-l border-line px-3 py-3 font-semibold">
-                    Jogador
-                  </th>
-                  <th className="border-y border-line px-3 py-3 font-semibold">
-                    WhatsApp
-                  </th>
-                  <th className="rounded-r-md border-y border-r border-line px-3 py-3 font-semibold">
-                    {selectedGame
-                      ? `${BRAZIL_FLAG} Brasil x ${selectedGame.opponentFlag} ${selectedGame.opponent}`
-                      : "Palpite"}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {!selectedGame ? (
-                  <tr>
-                    <td colSpan={3} className="px-3 py-8 text-center text-sm text-coal/60">
-                      Abra um jogo para ver palpites, prêmio e pagamentos.
-                    </td>
-                  </tr>
-                ) : null}
-                {selectedGame && selectedGamePlayers.length === 0 ? (
-                  <tr>
-                    <td colSpan={3} className="px-3 py-8 text-center text-sm text-coal/60">
-                      Nenhum palpite carregado para este jogo.
-                    </td>
-                  </tr>
-                ) : null}
-                {selectedGamePlayers.map((item) => {
-                  const prediction = selectedGame
-                    ? item.predictions.find(
-                        (entry) => entry.gameId === selectedGame.id
-                      )
-                    : null;
-
-                  return (
-                    <tr
-                      key={item.id}
-                      className={
-                        prediction?.isCurrentlyWinning
-                          ? "border-b border-field/20 bg-field/5"
-                          : "border-b border-line"
-                      }
-                    >
-                      <td className="border-b border-line px-3 py-3 font-semibold text-ink">
-                        {item.name}
-                      </td>
-                      <td className="border-b border-line px-3 py-3 text-coal/75">
-                        {item.maskedWhatsapp}
-                      </td>
-                      <td className="border-b border-line px-3 py-3">
-                        <span
-                          className={`rounded-md px-2.5 py-1 text-xs font-semibold ${
-                            prediction?.isHidden
-                              ? "select-none bg-canary/20 text-ink blur-[2px]"
-                              : prediction?.isCurrentlyWinning
-                                ? "bg-field/10 text-field"
-                              : prediction?.isOwn
-                                ? "bg-field/10 text-field"
-                                : "bg-mist text-coal"
-                          }`}
-                          title={
-                            prediction?.isHidden
-                              ? "Palpite de outro jogador fica embaçado na página pública"
-                              : prediction?.pendingPaymentCount
-                                ? "Aguardando confirmação de pagamento"
-                                : undefined
-                          }
-                        >
-                          {prediction?.display ?? "-"}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-          <p className="mt-3 text-xs font-semibold text-coal/60">
-            * indica palpite aguardando confirmação de pagamento.
-          </p>
-        </section>
-
-        <section className="rounded-lg border border-line bg-white p-5 shadow-panel">
-          <div className="flex flex-col gap-1">
-            <h2 className="text-xl font-semibold text-ink">Pagamento de prêmios</h2>
-            <p className="text-sm text-coal/70">
-              Vence quem acertar o placar exato do 1º e 2º tempos; prorrogação
-              e pênaltis não entram no rateio.
-            </p>
-          </div>
-
-          <div className="mt-5 rounded-md border border-line p-4">
-            {!selectedWinner ? (
-              <p className="text-sm text-coal/70">Selecione um jogo.</p>
+          <div className="mt-5 grid gap-3 md:grid-cols-2">
+            {data.winners.length === 0 ? (
+              <p className="rounded-md border border-line bg-mist px-3 py-4 text-sm text-coal/70">
+                Nenhum pagamento de prêmio disponível ainda.
+              </p>
             ) : null}
-            {selectedWinner ? (
-              <>
+            {data.winners.map((winner) => (
+              <article
+                key={winner.gameId}
+                className="rounded-lg border border-line bg-mist/60 p-4"
+              >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <p className="font-semibold text-ink">
-                      {selectedWinner.gameLabel}
-                    </p>
+                    <p className="font-semibold text-ink">{winner.gameLabel}</p>
                     <p className="mt-1 text-sm text-coal/70">
-                      Placar real: {selectedWinner.scoreLabel ?? "pendente"}
+                      Placar real: {winner.scoreLabel ?? "pendente"}
                     </p>
                   </div>
-                  <span className="rounded-md bg-mist px-2.5 py-1 text-xs font-semibold text-coal">
-                    {selectedWinner.status === "HAS_WINNER"
-                      ? selectedWinner.shareAmountFormatted
-                      : selectedWinner.status === "NO_WINNER"
+                  <span
+                    className={`rounded-md px-2.5 py-1 text-xs font-semibold ${
+                      winner.status === "HAS_WINNER"
+                        ? "bg-field/10 text-field"
+                        : winner.status === "NO_WINNER"
+                          ? "bg-canary/25 text-ink"
+                          : "bg-white text-coal"
+                    }`}
+                  >
+                    {winner.status === "HAS_WINNER"
+                      ? winner.shareAmountFormatted
+                      : winner.status === "NO_WINNER"
                         ? "Sem vencedor"
                         : "Aguardando placar"}
                   </span>
                 </div>
 
                 <div className="mt-3 grid gap-2 text-sm">
-                  {selectedWinner.status === "HAS_WINNER"
-                    ? selectedWinner.winners.map((winner) => (
+                  {winner.status === "HAS_WINNER"
+                    ? winner.winners.map((playerWinner) => (
                         <div
-                          key={winner.playerId}
-                          className="flex flex-wrap justify-between gap-2 rounded-md bg-field/5 px-3 py-2 text-field"
+                          key={playerWinner.playerId}
+                          className="flex flex-wrap justify-between gap-2 rounded-md bg-white px-3 py-2 text-field"
                         >
-                          <span className="font-semibold">{winner.name}</span>
+                          <span className="font-semibold">
+                            {playerWinner.name}
+                          </span>
                           <span>
-                            Palpite {winner.predictionLabel} · Rateio{" "}
-                            {selectedWinner.shareAmountFormatted}
+                            Palpite {playerWinner.predictionLabel} · Rateio{" "}
+                            {winner.shareAmountFormatted}
                           </span>
                         </div>
                       ))
                     : null}
-                  {selectedWinner.status === "NO_WINNER" ? (
-                    <p className="rounded-md bg-mist px-3 py-2 text-coal/70">
+                  {winner.status === "NO_WINNER" ? (
+                    <p className="rounded-md bg-white px-3 py-2 text-coal/70">
                       Sem vencedor neste jogo.
                     </p>
                   ) : null}
-                  {selectedWinner.status === "PENDING_SCORE" ? (
-                    <p className="rounded-md bg-mist px-3 py-2 text-coal/70">
+                  {winner.status === "PENDING_SCORE" ? (
+                    <p className="rounded-md bg-white px-3 py-2 text-coal/70">
                       Aguardando placar real.
                     </p>
                   ) : null}
                 </div>
 
                 <p className="mt-3 text-xs font-semibold text-coal/60">
-                  Prêmio do jogo: {formatBRL(selectedWinner.totalAmount)}
+                  Prêmio do jogo: {formatBRL(winner.totalAmount)}
                 </p>
-              </>
-            ) : null}
+              </article>
+            ))}
           </div>
         </section>
-          </>
         ) : null}
       </div>
       ) : null}
@@ -1365,6 +1292,18 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
               >
                 ×
               </button>
+            </div>
+
+            <div className="mt-5 rounded-lg border border-field/20 bg-gradient-to-r from-field/10 via-white to-canary/20 px-4 py-5 text-center">
+              <p className="text-xs font-semibold uppercase text-coal/60">
+                Valor deste jogo
+              </p>
+              <p className="mt-1 text-4xl font-semibold text-field">
+                {selectedGame?.valorBolaoFormatted ?? formatBRL(0)}
+              </p>
+              <p className="mt-2 text-sm font-semibold text-ink">
+                {paymentGameLabel}
+              </p>
             </div>
 
             <div className="mt-4 rounded-md border border-field/20 bg-field/5 p-3">

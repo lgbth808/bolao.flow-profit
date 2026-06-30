@@ -182,6 +182,10 @@ export function PlayerEntry() {
                 value={whatsapp}
                 onChange={(event) => setWhatsapp(formatWhatsappInput(event.target.value))}
                 placeholder="(91) 98258-5313"
+                type="tel"
+                inputMode="numeric"
+                pattern="[0-9()\\s-]*"
+                autoComplete="tel-national"
                 className="h-11 rounded-md border border-line px-3 text-sm font-normal text-ink outline-none transition focus:border-field focus:ring-2 focus:ring-field/15"
               />
             </label>
