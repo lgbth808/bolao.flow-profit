@@ -43,19 +43,45 @@ export const clearFinalPrizeSnapshotData = {
   prizeFinalizedAt: null
 };
 
+const finalPrizeGameSelect = {
+  id: true,
+  valorBolao: true,
+  brazilScore: true,
+  opponentScore: true,
+  predictions: {
+    select: {
+      playerId: true,
+      brazilGoals: true,
+      opponentGoals: true,
+      paidAt: true,
+      player: {
+        select: {
+          id: true,
+          name: true,
+          whatsapp: true
+        }
+      }
+    }
+  }
+} satisfies Prisma.GameSelect;
+
+const finalizedGameResultSelect = {
+  id: true,
+  poolId: true,
+  opponent: true,
+  opponentFlag: true,
+  kickoffAt: true,
+  newGameWhatsappSentAt: true,
+  finishedAt: true
+} satisfies Prisma.GameSelect;
+
 export async function buildFinalPrizeSnapshotData(
   gameId: string,
   prizeFinalizedAt = new Date()
 ) {
   const game = await prisma.game.findUnique({
     where: { id: gameId },
-    include: {
-      predictions: {
-        include: {
-          player: true
-        }
-      }
-    }
+    select: finalPrizeGameSelect
   });
 
   if (!game) {
@@ -109,6 +135,7 @@ export async function finalizeGamePrizeSnapshot(
 
   return prisma.game.update({
     where: { id: gameId },
-    data
+    data,
+    select: finalizedGameResultSelect
   });
 }

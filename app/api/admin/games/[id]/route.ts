@@ -92,7 +92,7 @@ export async function PATCH(
     });
 
     if (game.finishedAt) {
-      game = await finalizeGamePrizeSnapshot(game.id, game.finishedAt);
+      await finalizeGamePrizeSnapshot(game.id, game.finishedAt);
     }
 
     return ok({ game });

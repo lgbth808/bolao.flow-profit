@@ -81,7 +81,7 @@ export async function POST(request: Request) {
     });
 
     if (game.finishedAt) {
-      game = await finalizeGamePrizeSnapshot(game.id, game.finishedAt);
+      await finalizeGamePrizeSnapshot(game.id, game.finishedAt);
     }
 
     const whatsappResult = await sendNewGameMessageToPlayers(game);

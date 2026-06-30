@@ -86,6 +86,44 @@ const predictionGameSummarySelect = {
   }
 } satisfies Prisma.GameSelect;
 
+const poolPublicSelect = {
+  id: true,
+  name: true,
+  pixKey: true,
+  pixOwner: true
+} satisfies Prisma.PoolSelect;
+
+const currentPlayerSelect = {
+  id: true,
+  poolId: true,
+  whatsapp: true,
+  pool: {
+    select: {
+      id: true,
+      name: true
+    }
+  }
+} satisfies Prisma.PlayerSelect;
+
+const publicPlayerSelect = {
+  id: true,
+  name: true,
+  whatsapp: true,
+  valorPago: true,
+  predictions: {
+    select: {
+      id: true,
+      playerId: true,
+      gameId: true,
+      brazilGoals: true,
+      opponentGoals: true,
+      paidAt: true,
+      createdAt: true,
+      updatedAt: true
+    }
+  }
+} satisfies Prisma.PlayerSelect;
+
 const finalPrizeSnapshotFallback = {
   finalizedPrizeAmount: null,
   finalizedWinningQuotaCount: null,
@@ -314,12 +352,13 @@ export async function getPublicPoolData(
   await syncDueGameScores();
 
   const pools = await prisma.pool.findMany({
+    select: poolPublicSelect,
     orderBy: [{ createdAt: "asc" }, { name: "asc" }]
   });
   const currentPlayer = currentPlayerId
     ? await prisma.player.findUnique({
         where: { id: currentPlayerId },
-        include: { pool: true }
+        select: currentPlayerSelect
       })
     : null;
   const selectedPoolId = options.includeAllPools
@@ -337,7 +376,7 @@ export async function getPublicPoolData(
   const [players, rawGames] = await Promise.all([
     prisma.player.findMany({
       where: playerWhere,
-      include: { predictions: true },
+      select: publicPlayerSelect,
       orderBy: [{ name: "asc" }, { createdAt: "asc" }]
     }),
     prisma.game.findMany({

@@ -4,7 +4,10 @@ export const API_FOOTBALL_KEY_SETTING = "apiFootballKey";
 
 export async function getSetting(key: string) {
   const setting = await prisma.appSetting.findUnique({
-    where: { key }
+    where: { key },
+    select: {
+      value: true
+    }
   });
 
   return setting?.value ?? "";
