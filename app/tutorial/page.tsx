@@ -4,9 +4,34 @@ import Link from "next/link";
 import { TutorialBook } from "@/components/tutorial/tutorial-book";
 
 export const metadata: Metadata = {
-  title: "Tutorial | Bet Barão by d. Rosa",
+  title: "Bet Barão by d. Rosa — Tutorial",
   description:
-    "Aprenda como participar do Bet Barão by d. Rosa, o bolão da família Silva."
+    "Aprenda como participar do bolão da família Silva, agregados e amigos.",
+  alternates: {
+    canonical: "https://bolao.flow-profit.com/tutorial"
+  },
+  openGraph: {
+    title: "Bet Barão by d. Rosa — Tutorial",
+    description:
+      "Aprenda como participar do bolão da família Silva, agregados e amigos.",
+    url: "https://bolao.flow-profit.com/tutorial",
+    type: "website",
+    images: [
+      {
+        url: "/brand/og_tutorial.png",
+        width: 900,
+        height: 600,
+        alt: "Tutorial Bet Barão by d. Rosa"
+      }
+    ]
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Bet Barão by d. Rosa — Tutorial",
+    description:
+      "Aprenda como participar do bolão da família Silva, agregados e amigos.",
+    images: ["/brand/og_tutorial.png"]
+  }
 };
 
 export default function TutorialRoute() {
