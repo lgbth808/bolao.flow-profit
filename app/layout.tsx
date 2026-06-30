@@ -8,11 +8,11 @@ export const metadata: Metadata = {
   description: "O bolão da família Silva, agregados e amigos.",
   icons: {
     icon: [
-      { url: "/brand/favicon.png", type: "image/png" },
-      { url: "/brand/logo_simbolo.png", type: "image/png" }
+      { url: "/brand/icones/favicon.png", type: "image/png" },
+      { url: "/brand/logos/logo_simbolo.png", type: "image/png" }
     ],
-    apple: [{ url: "/brand/logo_simbolo.png", type: "image/png" }],
-    shortcut: "/brand/favicon.png"
+    apple: [{ url: "/brand/logos/logo_simbolo.png", type: "image/png" }],
+    shortcut: "/brand/icones/favicon.png"
   },
   manifest: "/manifest.webmanifest",
   openGraph: {
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     siteName: "Bet Barão by d. Rosa",
     images: [
       {
-        url: "/brand/logo_principal.png",
+        url: "/brand/logos/logo_principal.png",
         width: 1200,
         height: 630,
         alt: "Bet Barão by d. Rosa, o bolão da família Silva"
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Bet Barão by d. Rosa",
     description: "O bolão da família Silva, agregados e amigos.",
-    images: ["/brand/logo_principal.png"]
+    images: ["/brand/logos/logo_principal.png"]
   },
   appleWebApp: {
     title: "Bet Barão",

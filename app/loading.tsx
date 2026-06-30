@@ -5,7 +5,7 @@ export default function Loading() {
     <main className="login-brand-bg flex min-h-screen items-center justify-center px-4">
       <div className="rounded-lg border border-canary/70 bg-white/95 px-6 py-5 text-center shadow-panel backdrop-blur">
         <Image
-          src="/brand/logo_texto.png"
+          src="/brand/logos/logo_texto.png"
           alt="Bet Barão by d. Rosa"
           width={180}
           height={64}

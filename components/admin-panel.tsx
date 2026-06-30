@@ -892,7 +892,7 @@ export function AdminPanel({ initialData }: { initialData: AdminPoolData }) {
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-5 sm:flex-row sm:items-center sm:justify-between lg:px-6">
           <div className="flex items-center gap-3">
             <Image
-              src="/brand/logo_simbolo.png"
+              src="/brand/logos/logo_simbolo.png"
               alt="Símbolo Bet Barão"
               width={56}
               height={56}

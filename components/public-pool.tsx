@@ -40,7 +40,7 @@ const CURRENT_PREDICTION_RULE =
 function BrandIcon({ className = "h-10 w-10" }: { className?: string }) {
   return (
     <Image
-      src="/brand/logo_simbolo.png"
+      src="/brand/logos/logo_simbolo.png"
       alt="Bet Barão"
       width={56}
       height={56}
@@ -697,7 +697,7 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3 lg:px-6">
           <a href="/apostas" className="inline-flex items-center gap-3">
             <Image
-              src="/brand/logo_horizontal.png"
+              src="/brand/logos/logo_horizontal.png"
               alt="Bet Barão by d. Rosa"
               width={260}
               height={96}
@@ -705,7 +705,7 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
               priority
             />
             <Image
-              src="/brand/logo_simbolo.png"
+              src="/brand/logos/logo_simbolo.png"
               alt="Bet Barão"
               width={48}
               height={48}

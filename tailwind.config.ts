@@ -16,7 +16,7 @@ const config: Config = {
       coal: "#111111",
       field: "#0F3D2E",
       canary: "#F2C230",
-      mist: "#FFF6E5",
+      mist: "#FFF0D6",
       line: "#F2C230",
       rose: "#EB3D8C",
       red: {

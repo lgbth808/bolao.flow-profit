@@ -4,7 +4,7 @@
 
 :root {
   color-scheme: light;
-  background: #fff6e5;
+  background: #fff0d6;
 }
 
 * {
@@ -18,7 +18,7 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
-  background: #fff6e5;
+  background: #fff0d6;
   color: #111111;
   font-family: Arial, Helvetica, sans-serif;
   letter-spacing: 0;
@@ -61,7 +61,7 @@ button:disabled {
   position: relative;
   isolation: isolate;
   overflow-x: hidden;
-  background: #fff6e5;
+  background: #fff0d6;
 }
 
 .login-brand-bg::before {
@@ -71,7 +71,7 @@ button:disabled {
   z-index: 0;
   background-image:
     linear-gradient(135deg, rgba(255, 246, 229, 0.24), rgba(255, 246, 229, 0.10)),
-    url("/brand/background_login.png");
+    url("/brand/backgrounds/background_login.png");
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -86,7 +86,7 @@ button:disabled {
 .admin-brand-bg {
   background-image:
     linear-gradient(180deg, rgba(255, 246, 229, 0.94), rgba(255, 255, 255, 0.92)),
-    url("/brand/background_admin.png");
+    url("/brand/backgrounds/background_admin.png");
   background-position: center;
   background-size: cover;
 }
@@ -126,7 +126,7 @@ button:disabled {
   .login-brand-bg::before {
     background-image:
       linear-gradient(180deg, rgba(255, 246, 229, 0.42), rgba(255, 246, 229, 0.24)),
-      url("/brand/background_login_mobile.png");
+      url("/brand/backgrounds/background_login_mobile.png");
     background-position: center top;
     background-size: cover;
   }

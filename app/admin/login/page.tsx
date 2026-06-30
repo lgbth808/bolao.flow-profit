@@ -27,7 +27,7 @@ export default function AdminLoginPage({
       <section className="w-full max-w-md rounded-lg border border-canary/70 bg-white/95 p-6 shadow-panel backdrop-blur">
         <div className="text-center">
           <Image
-            src="/brand/logo_horizontal.png"
+            src="/brand/logos/logo_horizontal.png"
             alt="Bet Barão by d. Rosa"
             width={320}
             height={120}

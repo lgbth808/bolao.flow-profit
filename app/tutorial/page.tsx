@@ -41,7 +41,7 @@ export default function TutorialRoute() {
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 md:flex-row md:items-center md:justify-between">
           <Link href="/" className="inline-flex items-center gap-3">
             <Image
-              src="/brand/logo_horizontal_dark.png"
+              src="/brand/logos/logo_horizontal_dark.png"
               alt="Bet Barão by d. Rosa"
               width={220}
               height={110}
