@@ -1,3 +1,4 @@
+import type { Prisma } from "@prisma/client";
 import { getApiFootballKey } from "./settings";
 import { prisma } from "./prisma";
 import { finalizeGamePrizeSnapshot } from "./prize";
@@ -99,6 +100,16 @@ type SyncResult = {
   status?: GameStatusValue;
   error?: string;
 };
+
+const scoreSyncGameSelect = {
+  id: true,
+  opponent: true,
+  kickoffAt: true,
+  status: true,
+  apiFootballFixtureId: true,
+  scoreLastSyncedAt: true,
+  finishedAt: true
+} satisfies Prisma.GameSelect;
 
 function normalizeText(value: unknown) {
   return String(value ?? "")
@@ -551,7 +562,8 @@ export async function syncGameScoreById(
   options: { ignoreInterval?: boolean; allowFinalized?: boolean } = {}
 ): Promise<SyncResult> {
   const game = await prisma.game.findUnique({
-    where: { id: gameId }
+    where: { id: gameId },
+    select: scoreSyncGameSelect
   });
 
   if (!game) {
@@ -642,6 +654,9 @@ async function syncGameScore(
           parsed.statusLong || parsed.statusShort || "Placar sincronizado pela API-Football.",
         scoreSyncError: null,
         finishedAt: parsed.isFinal ? now : undefined
+      },
+      select: {
+        id: true
       }
     });
 
@@ -666,6 +681,9 @@ async function syncGameScore(
       data: {
         scoreLastSyncedAt: now,
         scoreSyncError: message
+      },
+      select: {
+        id: true
       }
     });
 
@@ -688,7 +706,8 @@ export async function syncEligibleGameScores(
         not: null
       },
       finishedAt: options.allowFinalized ? undefined : null
-    }
+    },
+    select: scoreSyncGameSelect
   });
 
   return Promise.all(games.map((game) => syncGameScore(game, options)));

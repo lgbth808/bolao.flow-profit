@@ -1,3 +1,4 @@
+import type { Prisma } from "@prisma/client";
 import { prisma } from "./prisma";
 import { getApiFootballKey } from "./settings";
 import { getWhatsappConfig } from "./whatsapp";
@@ -19,6 +20,92 @@ type PublicPoolDataOptions = {
   includePrivateScores?: boolean;
   includeAllPools?: boolean;
 };
+
+const gameReadSelect = {
+  id: true,
+  poolId: true,
+  opponent: true,
+  opponentFlag: true,
+  phase: true,
+  kickoffAt: true,
+  valorBolao: true,
+  predictionRule: true,
+  status: true,
+  brazilScore: true,
+  opponentScore: true,
+  scoreSourceUrl: true,
+  apiFootballFixtureId: true,
+  apiFootballStatusShort: true,
+  apiFootballStatusLong: true,
+  apiFootballElapsed: true,
+  scoreLastSyncedAt: true,
+  scoreSyncStatus: true,
+  scoreSyncError: true,
+  finishedAt: true,
+  newGameWhatsappSentAt: true,
+  hidePredictionsUntilLocked: true,
+  createdAt: true,
+  updatedAt: true,
+  pool: {
+    select: {
+      id: true,
+      name: true
+    }
+  },
+  predictions: {
+    select: {
+      id: true,
+      playerId: true,
+      gameId: true,
+      brazilGoals: true,
+      opponentGoals: true,
+      paidAt: true,
+      createdAt: true,
+      updatedAt: true,
+      player: {
+        select: {
+          id: true,
+          name: true,
+          whatsapp: true
+        }
+      }
+    }
+  }
+} satisfies Prisma.GameSelect;
+
+const predictionGameSummarySelect = {
+  id: true,
+  poolId: true,
+  opponent: true,
+  valorBolao: true,
+  pool: {
+    select: {
+      id: true,
+      name: true
+    }
+  }
+} satisfies Prisma.GameSelect;
+
+const finalPrizeSnapshotFallback = {
+  finalizedPrizeAmount: null,
+  finalizedWinningQuotaCount: null,
+  finalizedWinningShareAmount: null,
+  finalizedWinningScoreLabel: null,
+  finalizedWinnersJson: null,
+  prizeFinalizedAt: null
+};
+
+type GameReadRecord = Prisma.GameGetPayload<{
+  select: typeof gameReadSelect;
+}> &
+  typeof finalPrizeSnapshotFallback;
+
+function withFinalPrizeSnapshotFallback<T extends object>(game: T) {
+  return {
+    ...finalPrizeSnapshotFallback,
+    ...game
+  } as T & typeof finalPrizeSnapshotFallback;
+}
 
 function formatPredictionLabel(
   prediction: { brazilGoals: number; opponentGoals: number } | null
@@ -108,16 +195,7 @@ function isPredictionWinningForDisplay(
 }
 
 function publicGameFromRecord(
-  game: Awaited<ReturnType<typeof prisma.game.findMany>>[number] & {
-    pool?: { id: string; name: string } | null;
-    predictions: Array<{
-      playerId?: string;
-      brazilGoals: number;
-      opponentGoals: number;
-      paidAt?: Date | null;
-      player?: { whatsapp: string } | null;
-    }>;
-  },
+  game: GameReadRecord,
   options: { includePrivateScores?: boolean }
 ): PublicGame {
   const lockAt = getPredictionLockAt(game.kickoffAt);
@@ -256,7 +334,7 @@ export async function getPublicPoolData(
   const playerWhere =
     selectedPoolId && !options.includeAllPools ? { poolId: selectedPoolId } : {};
 
-  const [players, games] = await Promise.all([
+  const [players, rawGames] = await Promise.all([
     prisma.player.findMany({
       where: playerWhere,
       include: { predictions: true },
@@ -264,15 +342,11 @@ export async function getPublicPoolData(
     }),
     prisma.game.findMany({
       where: gameWhere,
-      include: {
-        pool: true,
-        predictions: {
-          include: { player: true }
-        }
-      },
+      select: gameReadSelect,
       orderBy: [{ kickoffAt: "asc" }, { createdAt: "asc" }]
     })
   ]);
+  const games = rawGames.map(withFinalPrizeSnapshotFallback);
 
   const gameIds = new Set(games.map((game) => game.id));
   const totalPrizeAmount = games.reduce(
@@ -502,23 +576,23 @@ export async function getAdminPoolData(): Promise<AdminPoolData> {
     includePrivateScores: true,
     includeAllPools: true
   });
-  const [players, predictions, games, pools, apiFootballKey, whatsappConfig, audits] =
+  const [players, predictions, rawGames, pools, apiFootballKey, whatsappConfig, audits] =
     await Promise.all([
       prisma.player.findMany({
         include: { pool: true },
         orderBy: [{ name: "asc" }, { createdAt: "asc" }]
       }),
       prisma.prediction.findMany({
-        include: { player: true, game: { include: { pool: true } } },
+        include: {
+          player: true,
+          game: {
+            select: predictionGameSummarySelect
+          }
+        },
         orderBy: [{ updatedAt: "desc" }]
       }),
       prisma.game.findMany({
-        include: {
-          pool: true,
-          predictions: {
-            include: { player: true }
-          }
-        },
+        select: gameReadSelect,
         orderBy: [{ kickoffAt: "asc" }, { createdAt: "asc" }]
       }),
       prisma.pool.findMany({
@@ -531,6 +605,7 @@ export async function getAdminPoolData(): Promise<AdminPoolData> {
         take: 80
       })
     ]);
+  const games = rawGames.map(withFinalPrizeSnapshotFallback);
 
   return {
     ...publicData,
