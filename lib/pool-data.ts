@@ -124,6 +124,53 @@ const publicPlayerSelect = {
   }
 } satisfies Prisma.PlayerSelect;
 
+const adminPlayerSelect = {
+  id: true,
+  name: true,
+  whatsapp: true,
+  valorPago: true,
+  pool: {
+    select: {
+      id: true,
+      name: true
+    }
+  }
+} satisfies Prisma.PlayerSelect;
+
+const adminPredictionSelect = {
+  id: true,
+  playerId: true,
+  gameId: true,
+  brazilGoals: true,
+  opponentGoals: true,
+  paidAt: true,
+  updatedAt: true,
+  player: {
+    select: {
+      id: true,
+      name: true,
+      whatsapp: true
+    }
+  },
+  game: {
+    select: predictionGameSummarySelect
+  }
+} satisfies Prisma.PredictionSelect;
+
+const predictionAuditSelect = {
+  id: true,
+  predictionId: true,
+  playerName: true,
+  playerWhatsapp: true,
+  gameLabel: true,
+  action: true,
+  previousBrazilGoals: true,
+  previousOpponentGoals: true,
+  nextBrazilGoals: true,
+  nextOpponentGoals: true,
+  createdAt: true
+} satisfies Prisma.PredictionAuditSelect;
+
 const finalPrizeSnapshotFallback = {
   finalizedPrizeAmount: null,
   finalizedWinningQuotaCount: null,
@@ -618,16 +665,11 @@ export async function getAdminPoolData(): Promise<AdminPoolData> {
   const [players, predictions, rawGames, pools, apiFootballKey, whatsappConfig, audits] =
     await Promise.all([
       prisma.player.findMany({
-        include: { pool: true },
+        select: adminPlayerSelect,
         orderBy: [{ name: "asc" }, { createdAt: "asc" }]
       }),
       prisma.prediction.findMany({
-        include: {
-          player: true,
-          game: {
-            select: predictionGameSummarySelect
-          }
-        },
+        select: adminPredictionSelect,
         orderBy: [{ updatedAt: "desc" }]
       }),
       prisma.game.findMany({
@@ -635,14 +677,22 @@ export async function getAdminPoolData(): Promise<AdminPoolData> {
         orderBy: [{ kickoffAt: "asc" }, { createdAt: "asc" }]
       }),
       prisma.pool.findMany({
+        select: poolPublicSelect,
         orderBy: [{ createdAt: "asc" }, { name: "asc" }]
       }),
       getApiFootballKey(),
       getWhatsappConfig(),
-      prisma.predictionAudit.findMany({
-        orderBy: [{ createdAt: "desc" }],
-        take: 80
-      })
+      prisma.predictionAudit
+        .findMany({
+          select: predictionAuditSelect,
+          orderBy: [{ createdAt: "desc" }],
+          take: 80
+        })
+        .catch((error) => {
+          console.error("Prediction audit unavailable for admin page.", error);
+
+          return [];
+        })
     ]);
   const games = rawGames.map(withFinalPrizeSnapshotFallback);
 
