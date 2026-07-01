@@ -1,10 +1,12 @@
 "use client";
 
+import Image from "next/image";
 import { FormEvent, useEffect, useState } from "react";
 import {
   DEFAULT_WHATSAPP_PREFIX,
-  formatWhatsappInput
+  normalizeWhatsappForSubmit
 } from "@/lib/phone";
+import { WhatsappInput } from "@/components/whatsapp-input";
 
 type IdentifiedPlayer = {
   id: string;
@@ -60,7 +62,11 @@ export function PlayerEntry() {
     const response = await fetch("/api/players/identify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: nameOverride ?? "", whatsapp, pin })
+      body: JSON.stringify({
+        name: nameOverride ?? "",
+        whatsapp: normalizeWhatsappForSubmit(whatsapp),
+        pin
+      })
     });
     const payload = (await response.json()) as ApiResult<{
       player: IdentifiedPlayer;
@@ -128,9 +134,24 @@ export function PlayerEntry() {
   }
 
   return (
-    <main className="login-brand-bg flex min-h-screen items-end px-4 pb-4 pt-40 sm:items-center sm:py-8">
-      <section className="mx-auto flex min-h-[calc(100vh-11rem)] w-full max-w-6xl items-end justify-center sm:min-h-[calc(100vh-3rem)] sm:items-center lg:justify-end">
-        <div className="w-full max-w-sm rounded-lg border border-canary/80 bg-white p-4 shadow-panel sm:max-w-md sm:bg-white/95 sm:p-7">
+    <main className="login-brand-bg flex min-h-[100svh] items-start px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-24 sm:min-h-screen sm:items-center sm:py-8">
+      <div
+        data-login-decor
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-3 z-0 flex h-20 items-start justify-center overflow-hidden sm:hidden"
+      >
+        <Image
+          src="/brand/logos/logo_principal.png"
+          alt=""
+          width={180}
+          height={120}
+          className="h-16 w-auto object-contain drop-shadow-sm"
+          priority
+        />
+      </div>
+
+      <section className="mx-auto flex w-full max-w-6xl justify-center sm:min-h-[calc(100vh-3rem)] sm:items-center lg:justify-end">
+        <div className="w-full max-w-sm rounded-lg border border-canary/80 bg-white p-4 shadow-panel sm:max-w-md sm:bg-white/95 sm:p-7 lg:translate-y-8">
           <div className="text-center">
             <p className="text-[0.68rem] font-black uppercase leading-tight text-field sm:text-xs">
               Família Silva, agregados e amigos
@@ -142,8 +163,8 @@ export function PlayerEntry() {
               Digite seu WhatsApp e sua senha de 4 números.
             </p>
             <p className="mt-1 text-xs font-semibold leading-snug text-coal/55">
-              O +55 já vem preenchido. Se o número for de outro país, apague e
-              digite o DDI correto.
+              O Brasil (+55) já vem preenchido. Se o número for de outro país,
+              toque em “País” ou digite o DDI correto.
             </p>
             <p className="mt-2 rounded-md border border-canary/45 bg-mist/90 px-3 py-2 text-xs font-semibold leading-snug text-coal/75 sm:text-sm">
               Se ainda não tiver cadastro, sua conta será criada automaticamente.
@@ -153,15 +174,10 @@ export function PlayerEntry() {
           <form onSubmit={handleIdentify} className="mt-4 grid gap-3 sm:mt-6 sm:gap-4">
             <label className="grid gap-1 text-sm font-semibold text-coal">
               WhatsApp
-              <input
+              <WhatsappInput
                 value={whatsapp}
-                onChange={(event) => setWhatsapp(formatWhatsappInput(event.target.value))}
-                placeholder="+55 (91) 98258-5313"
-                type="tel"
-                inputMode="tel"
-                pattern="[+0-9()\\s-]*"
-                autoComplete="tel"
-                className="h-10 rounded-md border border-line px-3 text-base font-normal text-ink outline-none transition focus:border-field focus:ring-2 focus:ring-field/15 sm:h-11 sm:text-sm"
+                onValueChange={setWhatsapp}
+                required
               />
             </label>
             <label className="grid gap-1 text-sm font-semibold text-coal">
@@ -252,6 +268,7 @@ export function PlayerEntry() {
           </form>
         </div>
       ) : null}
+
     </main>
   );
 }

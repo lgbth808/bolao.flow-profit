@@ -78,7 +78,7 @@ button:disabled {
   pointer-events: none;
 }
 
-.login-brand-bg > * {
+.login-brand-bg > :not([data-login-decor]) {
   position: relative;
   z-index: 1;
 }
@@ -125,9 +125,9 @@ button:disabled {
 @media (max-width: 640px) {
   .login-brand-bg::before {
     background-image:
-      linear-gradient(180deg, rgba(255, 246, 229, 0.42), rgba(255, 246, 229, 0.24)),
-      url("/brand/backgrounds/background_login_mobile.png");
-    background-position: center top;
+      linear-gradient(180deg, rgba(255, 246, 229, 0.82), rgba(255, 240, 214, 0.94)),
+      url("/brand/backgrounds/background_login.png");
+    background-position: 38% top;
     background-size: cover;
   }
 }

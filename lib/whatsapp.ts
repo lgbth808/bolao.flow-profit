@@ -3,6 +3,7 @@ import { getSetting, setSetting } from "./settings";
 import { formatBrasiliaDateTime } from "./datetime";
 
 export const WHATSAPP_CONFIG_SETTING = "whatsappEvolutionConfig";
+export const WHATSAPP_NOTIFICATION_RULES_SETTING = "whatsappNotificationRules";
 
 export type WhatsappConfig = {
   baseUrl: string;
@@ -38,6 +39,227 @@ type WhatsappPrediction = {
   brazilGoals: number;
   opponentGoals: number;
 };
+
+const WHATSAPP_BRAND_HEADER = `👑 bet Barão by d. Rosa
+
+⚽ Trionda • Bolão Copa 2026`;
+
+export type WhatsappNotificationRuleKey =
+  | "predictionCreated"
+  | "predictionUpdated"
+  | "predictionDeleted"
+  | "predictionAdminDeleted"
+  | "predictionPaid"
+  | "newGame"
+  | "testMessage"
+  | "adminPlayerCreated"
+  | "predictionsUnlocked"
+  | "resultPublished";
+
+export type WhatsappNotificationRule = {
+  enabled: boolean;
+  template: string;
+};
+
+export type WhatsappNotificationRuleView = WhatsappNotificationRule & {
+  key: WhatsappNotificationRuleKey;
+  label: string;
+  trigger: string;
+  implemented: boolean;
+  placeholders: string[];
+};
+
+type TemplateContext = Partial<
+  Record<
+    | "playerName"
+    | "adminName"
+    | "opponent"
+    | "opponentFlag"
+    | "gameLabel"
+    | "kickoffAt"
+    | "siteUrl"
+    | "instanceName"
+    | "brandName"
+    | "testMessage",
+    string
+  >
+>;
+
+const TEMPLATE_PLACEHOLDERS = [
+  "playerName",
+  "adminName",
+  "opponent",
+  "opponentFlag",
+  "gameLabel",
+  "kickoffAt",
+  "siteUrl",
+  "instanceName",
+  "brandName",
+  "testMessage"
+];
+
+const WHATSAPP_RULE_DEFINITIONS: Array<{
+  key: WhatsappNotificationRuleKey;
+  label: string;
+  trigger: string;
+  implemented: boolean;
+  enabled: boolean;
+  template: string;
+}> = [
+  {
+    key: "predictionCreated",
+    label: "Palpite cadastrado",
+    trigger: "Jogador salva um novo palpite",
+    implemented: true,
+    enabled: true,
+    template: `Olá, {playerName}!
+
+Seu palpite foi registrado com sucesso.
+
+Jogo:
+{gameLabel}
+
+Acesse o bolão:
+{siteUrl}
+
+Boa sorte!`
+  },
+  {
+    key: "predictionUpdated",
+    label: "Palpite atualizado",
+    trigger: "Jogador edita um palpite",
+    implemented: true,
+    enabled: true,
+    template: `Olá, {playerName}!
+
+Seu palpite foi atualizado com sucesso.
+
+Jogo:
+{gameLabel}
+
+Acesse o bolão:
+{siteUrl}
+
+Boa sorte!`
+  },
+  {
+    key: "predictionDeleted",
+    label: "Palpite excluído pelo jogador",
+    trigger: "Jogador exclui um palpite",
+    implemented: true,
+    enabled: true,
+    template: `Olá, {playerName}!
+
+Seu palpite foi excluído.
+
+Jogo:
+{gameLabel}
+
+Você pode fazer um novo palpite até 10 minutos antes do jogo.
+
+Acesse o bolão:
+{siteUrl}`
+  },
+  {
+    key: "predictionAdminDeleted",
+    label: "Palpite excluído pelo admin",
+    trigger: "Admin exclui um palpite",
+    implemented: true,
+    enabled: true,
+    template: `Olá, {playerName}!
+
+Um palpite seu foi excluído pelo admin do bolão.
+
+Jogo:
+{gameLabel}
+
+Acesse o bolão:
+{siteUrl}`
+  },
+  {
+    key: "predictionPaid",
+    label: "Pagamento confirmado",
+    trigger: "Admin dá baixa no pagamento",
+    implemented: true,
+    enabled: true,
+    template: `Olá, {playerName}!
+
+Pagamento confirmado pelo admin. Seu palpite está registrado.
+
+Jogo:
+{gameLabel}
+
+Acesse o bolão:
+{siteUrl}
+
+Boa sorte!`
+  },
+  {
+    key: "newGame",
+    label: "Novo jogo cadastrado",
+    trigger: "Admin cadastra um jogo no bolão",
+    implemented: true,
+    enabled: true,
+    template: `Olá, {playerName}!
+
+Admin do bolão cadastrou um novo jogo.
+
+Jogo:
+{gameLabel}
+
+Data e hora:
+{kickoffAt}
+
+Faça seu palpite até 10 minutos antes do início.
+
+Participe do bolão:
+{siteUrl}
+
+Boa sorte!`
+  },
+  {
+    key: "testMessage",
+    label: "Mensagem de teste",
+    trigger: "Admin clica em Testar envio",
+    implemented: true,
+    enabled: true,
+    template: `Teste do WhatsApp: {testMessage}
+
+Acesse o bolão:
+{siteUrl}`
+  },
+  {
+    key: "adminPlayerCreated",
+    label: "Apresentação do WhatsApp oficial",
+    trigger: "Admin cadastra um palpiteiro",
+    implemented: true,
+    enabled: true,
+    template: `Olá, {playerName}!
+
+Seu acesso foi cadastrado pelo admin do bolão.
+
+Entre com este WhatsApp e crie sua senha de 4 números no primeiro acesso.
+
+Acessar o bolão:
+{siteUrl}`
+  },
+  {
+    key: "predictionsUnlocked",
+    label: "Palpites liberados 10 minutos antes",
+    trigger: "Planejado: apostas fecham e palpites ficam visíveis",
+    implemented: false,
+    enabled: false,
+    template: `Planejado: avisar quando os palpites forem liberados para {gameLabel}.`
+  },
+  {
+    key: "resultPublished",
+    label: "Resultado publicado",
+    trigger: "Planejado: placar final e rateio publicados",
+    implemented: false,
+    enabled: false,
+    template: `Planejado: avisar quando o resultado de {gameLabel} for publicado.`
+  }
+];
 
 function emptyWhatsappConfig(): WhatsappConfig {
   return {
@@ -83,6 +305,92 @@ export async function getWhatsappConfig(): Promise<WhatsappConfig> {
   } catch {
     return emptyWhatsappConfig();
   }
+}
+
+function defaultWhatsappRules() {
+  return Object.fromEntries(
+    WHATSAPP_RULE_DEFINITIONS.map((definition) => [
+      definition.key,
+      {
+        enabled: definition.enabled,
+        template: definition.template
+      }
+    ])
+  ) as Record<WhatsappNotificationRuleKey, WhatsappNotificationRule>;
+}
+
+function mergeWhatsappRules(
+  input: Partial<Record<WhatsappNotificationRuleKey, Partial<WhatsappNotificationRule>>>
+) {
+  const defaults = defaultWhatsappRules();
+
+  return Object.fromEntries(
+    WHATSAPP_RULE_DEFINITIONS.map((definition) => {
+      const current = input[definition.key];
+      const enabled =
+        typeof current?.enabled === "boolean"
+          ? current.enabled
+          : defaults[definition.key].enabled;
+      const template =
+        typeof current?.template === "string" && current.template.trim()
+          ? current.template.trim()
+          : defaults[definition.key].template;
+
+      return [
+        definition.key,
+        {
+          enabled: definition.implemented ? enabled : false,
+          template
+        }
+      ];
+    })
+  ) as Record<WhatsappNotificationRuleKey, WhatsappNotificationRule>;
+}
+
+export async function getWhatsappNotificationRules() {
+  const raw = await getSetting(WHATSAPP_NOTIFICATION_RULES_SETTING);
+
+  if (!raw) {
+    return defaultWhatsappRules();
+  }
+
+  try {
+    return mergeWhatsappRules(
+      JSON.parse(raw) as Partial<
+        Record<WhatsappNotificationRuleKey, Partial<WhatsappNotificationRule>>
+      >
+    );
+  } catch {
+    return defaultWhatsappRules();
+  }
+}
+
+export async function saveWhatsappNotificationRules(
+  input: Partial<Record<WhatsappNotificationRuleKey, Partial<WhatsappNotificationRule>>>
+) {
+  const current = await getWhatsappNotificationRules();
+  const merged = mergeWhatsappRules({
+    ...current,
+    ...input
+  });
+
+  await setSetting(WHATSAPP_NOTIFICATION_RULES_SETTING, JSON.stringify(merged));
+
+  return merged;
+}
+
+export function publicWhatsappNotificationRules(
+  rules: Record<WhatsappNotificationRuleKey, WhatsappNotificationRule>
+): WhatsappNotificationRuleView[] {
+  return WHATSAPP_RULE_DEFINITIONS.map((definition) => ({
+    key: definition.key,
+    label: definition.label,
+    trigger: definition.trigger,
+    implemented: definition.implemented,
+    placeholders: TEMPLATE_PLACEHOLDERS,
+    enabled: rules[definition.key]?.enabled ?? definition.enabled,
+    template: rules[definition.key]?.template ?? definition.template
+  }));
 }
 
 export function formatWhatsappNumber(phone: string) {
@@ -166,10 +474,6 @@ export async function sendWhatsappMessage(
   }
 }
 
-function siteUrlText() {
-  return getWhatsappConfig().then((config) => config.siteUrl);
-}
-
 function formatKickoff(value: Date | string | undefined) {
   if (!value) {
     return "Data a confirmar";
@@ -191,29 +495,68 @@ function firstWarning(results: WhatsappSendResult[]) {
   return results.find((result) => result.warning)?.warning;
 }
 
+function templateContext(
+  config: WhatsappConfig,
+  player?: WhatsappPlayer,
+  game?: WhatsappGame,
+  extra?: TemplateContext
+): TemplateContext {
+  return {
+    brandName: "bet Barão by d. Rosa",
+    adminName: "Admin do bolão",
+    instanceName: config.instanceName,
+    siteUrl: config.siteUrl,
+    playerName: player?.name ?? "",
+    opponent: game?.opponent ?? "",
+    opponentFlag: game?.opponentFlag ?? "",
+    gameLabel: game ? gameLabel(game) : "",
+    kickoffAt: game ? formatKickoff(game.kickoffAt) : "",
+    ...extra
+  };
+}
+
+function renderTemplate(template: string, context: TemplateContext) {
+  return template.replace(/\{([a-zA-Z][a-zA-Z0-9]*)\}/g, (match, key) => {
+    if (!TEMPLATE_PLACEHOLDERS.includes(key)) {
+      return match;
+    }
+
+    return context[key as keyof TemplateContext] ?? "";
+  });
+}
+
+async function sendWhatsappRuleMessage(
+  ruleKey: WhatsappNotificationRuleKey,
+  phone: string,
+  context: TemplateContext
+) {
+  const rules = await getWhatsappNotificationRules();
+  const definition = WHATSAPP_RULE_DEFINITIONS.find(
+    (item) => item.key === ruleKey
+  );
+  const rule = rules[ruleKey];
+
+  if (!definition?.implemented || !rule?.enabled) {
+    return { sent: false, skipped: true } as WhatsappSendResult;
+  }
+
+  const body = renderTemplate(rule.template, context).trim();
+
+  return sendWhatsappMessage(phone, `${WHATSAPP_BRAND_HEADER}\n\n${body}`);
+}
+
 export async function sendPredictionCreatedMessage(
   player: WhatsappPlayer,
   game: WhatsappGame,
   prediction: WhatsappPrediction
 ) {
   void prediction;
-  const siteUrl = await siteUrlText();
+  const config = await getWhatsappConfig();
 
-  return sendWhatsappMessage(
+  return sendWhatsappRuleMessage(
+    "predictionCreated",
     player.whatsapp,
-    `⚽ Bolão Copa 2026
-
-Olá, ${player.name}!
-
-Seu palpite foi registrado com sucesso.
-
-Jogo:
-${gameLabel(game)}
-
-Acesse o bolão:
-${siteUrl}
-
-Boa sorte!`
+    templateContext(config, player, game)
   );
 }
 
@@ -223,23 +566,12 @@ export async function sendPredictionUpdatedMessage(
   prediction: WhatsappPrediction
 ) {
   void prediction;
-  const siteUrl = await siteUrlText();
+  const config = await getWhatsappConfig();
 
-  return sendWhatsappMessage(
+  return sendWhatsappRuleMessage(
+    "predictionUpdated",
     player.whatsapp,
-    `⚽ Bolão Copa 2026
-
-Olá, ${player.name}!
-
-Seu palpite foi atualizado com sucesso.
-
-Jogo:
-${gameLabel(game)}
-
-Acesse o bolão:
-${siteUrl}
-
-Boa sorte!`
+    templateContext(config, player, game)
   );
 }
 
@@ -247,23 +579,12 @@ export async function sendPredictionDeletedMessage(
   player: WhatsappPlayer,
   game: WhatsappGame
 ) {
-  const siteUrl = await siteUrlText();
+  const config = await getWhatsappConfig();
 
-  return sendWhatsappMessage(
+  return sendWhatsappRuleMessage(
+    "predictionDeleted",
     player.whatsapp,
-    `⚽ Bolão Copa 2026
-
-Olá, ${player.name}!
-
-Seu palpite foi excluído.
-
-Jogo:
-${gameLabel(game)}
-
-Você pode fazer um novo palpite até 10 minutos antes do jogo.
-
-Acesse o bolão:
-${siteUrl}`
+    templateContext(config, player, game)
   );
 }
 
@@ -271,21 +592,12 @@ export async function sendPredictionAdminDeletedMessage(
   player: WhatsappPlayer,
   game: WhatsappGame
 ) {
-  const siteUrl = await siteUrlText();
+  const config = await getWhatsappConfig();
 
-  return sendWhatsappMessage(
+  return sendWhatsappRuleMessage(
+    "predictionAdminDeleted",
     player.whatsapp,
-    `⚽ Bolão Copa 2026
-
-Olá, ${player.name}!
-
-Um palpite seu foi excluído pelo admin do bolão.
-
-Jogo:
-${gameLabel(game)}
-
-Acesse o bolão:
-${siteUrl}`
+    templateContext(config, player, game)
   );
 }
 
@@ -295,23 +607,12 @@ export async function sendPredictionPaidMessage(
   prediction: WhatsappPrediction
 ) {
   void prediction;
-  const siteUrl = await siteUrlText();
+  const config = await getWhatsappConfig();
 
-  return sendWhatsappMessage(
+  return sendWhatsappRuleMessage(
+    "predictionPaid",
     player.whatsapp,
-    `⚽ Bolão Copa 2026
-
-Olá, ${player.name}!
-
-Pagamento confirmado pelo admin. Seu palpite está registrado.
-
-Jogo:
-${gameLabel(game)}
-
-Acesse o bolão:
-${siteUrl}
-
-Boa sorte!`
+    templateContext(config, player, game)
   );
 }
 
@@ -333,26 +634,10 @@ export async function sendNewGameMessageToPlayers(game: WhatsappGame) {
 
   const results = await Promise.all(
     players.map((player) =>
-      sendWhatsappMessage(
+      sendWhatsappRuleMessage(
+        "newGame",
         player.whatsapp,
-        `⚽ Novo jogo no Bolão Copa 2026!
-
-Olá, ${player.name}!
-
-Admin do bolão cadastrou um novo jogo.
-
-Jogo:
-${gameLabel(game)}
-
-Data e hora:
-${formatKickoff(game.kickoffAt)}
-
-Faça seu palpite até 10 minutos antes do início.
-
-Participe do bolão:
-${config.siteUrl}
-
-Boa sorte!`
+        templateContext(config, player, game)
       )
     )
   );
@@ -373,31 +658,25 @@ Boa sorte!`
 
 export async function testWhatsappMessage() {
   const config = await getWhatsappConfig();
-  const text = `✅ Teste do WhatsApp do Bet Barão
 
-Se você recebeu esta mensagem, a Evolution API está conectada corretamente.
-
-Acesse o bolão:
-${config.siteUrl}`;
-
-  return sendWhatsappMessage(config.testNumber, text);
+  return sendWhatsappRuleMessage(
+    "testMessage",
+    config.testNumber,
+    templateContext(config, undefined, undefined, {
+      testMessage:
+        config.testMessage ||
+        "se você recebeu esta mensagem, a Evolution API está conectada corretamente."
+    })
+  );
 }
 
 export async function sendAdminPlayerCreatedMessage(player: WhatsappPlayer) {
-  const siteUrl = await siteUrlText();
+  const config = await getWhatsappConfig();
 
-  return sendWhatsappMessage(
+  return sendWhatsappRuleMessage(
+    "adminPlayerCreated",
     player.whatsapp,
-    `⚽ Bet Barão by d. Rosa
-
-Olá, ${player.name}!
-
-Seu acesso foi cadastrado pelo admin do bolão.
-
-Entre com este WhatsApp e crie sua senha de 4 números no primeiro acesso.
-
-Acessar o bolão:
-${siteUrl}`
+    templateContext(config, player)
   );
 }
 

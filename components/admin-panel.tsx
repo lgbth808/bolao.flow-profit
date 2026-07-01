@@ -5,10 +5,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import type { AdminGame, AdminPoolData } from "@/lib/types";
 import { formatBrasiliaDateTime, toBrasiliaDateTimeLocal } from "@/lib/datetime";
 import { getOpponentFlag, WORLD_CUP_2026_TEAMS } from "@/lib/flags";
-import {
-  DEFAULT_WHATSAPP_PREFIX,
-  formatWhatsappInput
-} from "@/lib/phone";
+import { WhatsappInput } from "@/components/whatsapp-input";
 
 type ApiResult<T> = T & {
   error?: string;
@@ -57,6 +54,16 @@ type WhatsappConfigForm = {
   testMessage: string;
 };
 
+type WhatsappRuleForm = {
+  key: string;
+  label: string;
+  trigger: string;
+  implemented: boolean;
+  enabled: boolean;
+  template: string;
+  placeholders: string[];
+};
+
 type AdminSection =
   | "pools"
   | "api"
@@ -69,12 +76,28 @@ type AdminSection =
 
 type AdminModal = "pool" | "game" | null;
 type PaymentFilter = "TODOS" | "PAGO" | "PENDENTE";
+type PlayerSort = "NOME" | "BOLAO" | "MOVIMENTO";
 
 const LEGACY_PREDICTION_RULE =
   "Vale apenas para palpites de 1º e 2º tempos.";
 const DEFAULT_PREDICTION_RULE =
   "Vale para o placar do 1º e 2º tempos + prorrogação, caso haja.";
 const AUTO_UPDATE_STORAGE_KEY = "bolao-d-rosa-api-football-auto-update";
+const WHATSAPP_BRAND_HEADER = `👑 bet Barão by d. Rosa
+
+⚽ Trionda • Bolão Copa 2026`;
+const WHATSAPP_PREVIEW_CONTEXT: Record<string, string> = {
+  playerName: "Nana",
+  adminName: "Admin do bolão",
+  opponent: "Noruega",
+  opponentFlag: "🇳🇴",
+  gameLabel: "🇧🇷 Brasil x 🇳🇴 Noruega",
+  kickoffAt: "05/07/2026, 17:00",
+  siteUrl: "https://bolao.flow-profit.com",
+  instanceName: "bolao",
+  brandName: "bet Barão by d. Rosa",
+  testMessage: "se você recebeu esta mensagem, a Evolution API está conectada corretamente."
+};
 
 function formatDateTime(value: string) {
   return formatBrasiliaDateTime(value);
@@ -115,6 +138,16 @@ function auditActionLabel(action: string) {
 function evolutionManagerUrl(baseUrl: string) {
   const normalized = baseUrl.trim().replace(/\/+$/, "");
   return normalized ? `${normalized}/manager` : "";
+}
+
+function previewWhatsappTemplate(template: string) {
+  const body = template
+    .replace(/\{([a-zA-Z][a-zA-Z0-9]*)\}/g, (match, key) => {
+      return WHATSAPP_PREVIEW_CONTEXT[key] ?? match;
+    })
+    .trim();
+
+  return `${WHATSAPP_BRAND_HEADER}\n\n${body}`;
 }
 
 function gamePayload(form: HTMLFormElement) {
@@ -305,6 +338,7 @@ export function AdminPanel({ initialData }: { initialData: AdminPoolData }) {
     testNumber: "",
     testMessage: ""
   });
+  const [whatsappRules, setWhatsappRules] = useState<WhatsappRuleForm[]>([]);
   const [fixturePoolId, setFixturePoolId] = useState(
     initialData.adminPools[0]?.id ?? ""
   );
@@ -322,6 +356,7 @@ export function AdminPanel({ initialData }: { initialData: AdminPoolData }) {
   const [financeGameId, setFinanceGameId] = useState("");
   const [financePaymentFilter, setFinancePaymentFilter] =
     useState<PaymentFilter>("TODOS");
+  const [playerSort, setPlayerSort] = useState<PlayerSort>("NOME");
   const [predictionSearch, setPredictionSearch] = useState("");
   const [predictionGameId, setPredictionGameId] = useState("");
   const [predictionPaymentFilter, setPredictionPaymentFilter] =
@@ -372,6 +407,36 @@ export function AdminPanel({ initialData }: { initialData: AdminPoolData }) {
     predictionSearch
   ]);
 
+  const sortedAdminPlayers = useMemo(() => {
+    return [...data.adminPlayers].sort((first, second) => {
+      if (playerSort === "BOLAO") {
+        const poolComparison = (first.poolName ?? "").localeCompare(
+          second.poolName ?? "",
+          "pt-BR"
+        );
+
+        if (poolComparison !== 0) {
+          return poolComparison;
+        }
+      }
+
+      if (playerSort === "MOVIMENTO") {
+        const firstCount = data.adminFinanceEntries.filter(
+          (entry) => entry.playerId === first.id
+        ).length;
+        const secondCount = data.adminFinanceEntries.filter(
+          (entry) => entry.playerId === second.id
+        ).length;
+
+        if (firstCount !== secondCount) {
+          return secondCount - firstCount;
+        }
+      }
+
+      return first.name.localeCompare(second.name, "pt-BR");
+    });
+  }, [data.adminFinanceEntries, data.adminPlayers, playerSort]);
+
   async function refresh() {
     const response = await fetch("/api/admin", { cache: "no-store" });
     setData(await readApi<AdminPoolData>(response));
@@ -385,10 +450,7 @@ export function AdminPanel({ initialData }: { initialData: AdminPoolData }) {
 
     setWhatsappConfig((current) => ({
       ...result.config,
-      apiKey: current.apiKey,
-      testNumber: result.config.testNumber
-        ? formatWhatsappInput(result.config.testNumber)
-        : ""
+      apiKey: current.apiKey
     }));
   }
 
@@ -1437,15 +1499,14 @@ export function AdminPanel({ initialData }: { initialData: AdminPoolData }) {
               />
             </Field>
             <Field label="Número de teste">
-              <TextInput
+              <WhatsappInput
                 value={whatsappConfig.testNumber}
-                onChange={(event) =>
+                onValueChange={(testNumber) =>
                   setWhatsappConfig((current) => ({
                     ...current,
-                    testNumber: formatWhatsappInput(event.target.value)
+                    testNumber
                   }))
                 }
-                placeholder="+55 (91) 98258-5313"
               />
             </Field>
             <Field label="Mensagem de teste">
@@ -1486,8 +1547,42 @@ export function AdminPanel({ initialData }: { initialData: AdminPoolData }) {
                 : "Evolution API pendente"}
             </p>
             <p className="mt-1 text-coal/70">
-              Telefone enviado no formato 55DDDNUMERO. Se o número tiver 11
-              dígitos, o sistema prefixa 55 automaticamente.
+              Telefones são enviados em formato internacional sem espaços nem
+              pontuação. Ex.: +55 (91) 98258-5313 vira 5591982585313.
+            </p>
+          </div>
+
+          <div className="mt-4 rounded-md border border-line bg-white p-4 text-sm shadow-sm">
+            <h3 className="font-semibold text-ink">
+              Identidade oficial no WhatsApp
+            </h3>
+            <ul className="mt-3 space-y-2 text-coal/75">
+              <li>Configure o número oficial como WhatsApp Business.</li>
+              <li>
+                Nome comercial recomendado:{" "}
+                <span className="font-semibold text-ink">
+                  bet Barão by d. Rosa
+                </span>
+                .
+              </li>
+              <li>Use a logo dourada oficial com o B como foto de perfil.</li>
+              <li>
+                Alguns usuários ainda podem ver o telefone se não salvarem o
+                contato ou se a conta ainda não for reconhecida pelo
+                WhatsApp/Meta.
+              </li>
+              <li>
+                Peça aos participantes para salvar o contato como{" "}
+                <span className="font-semibold text-ink">
+                  bet Barão by d. Rosa
+                </span>
+                .
+              </li>
+            </ul>
+            <p className="mt-3 rounded-md border border-canary/30 bg-canary/15 px-3 py-2 text-xs font-semibold text-ink">
+              O app não consegue forçar o WhatsApp a esconder o número. Isso
+              depende do WhatsApp Business, do contato salvo e das regras da
+              Meta.
             </p>
           </div>
 
@@ -1858,17 +1953,8 @@ export function AdminPanel({ initialData }: { initialData: AdminPoolData }) {
               <TextInput name="name" placeholder="Nome completo" required />
             </Field>
             <Field label="WhatsApp">
-              <TextInput
+              <WhatsappInput
                 name="whatsapp"
-                defaultValue={DEFAULT_WHATSAPP_PREFIX}
-                onChange={(event) => {
-                  event.currentTarget.value = formatWhatsappInput(
-                    event.currentTarget.value
-                  );
-                }}
-                placeholder="+55 (91) 98258-5313"
-                inputMode="tel"
-                autoComplete="tel"
                 required
               />
             </Field>
@@ -1892,86 +1978,130 @@ export function AdminPanel({ initialData }: { initialData: AdminPoolData }) {
             </button>
           </form>
 
-          <div className="mt-5 grid gap-3">
+          <div className="mt-5 flex flex-wrap items-center gap-2">
+            <span className="text-xs font-black uppercase text-coal/60">
+              Classificação
+            </span>
+            {[
+              ["NOME", "Nome"],
+              ["BOLAO", "Bolão"],
+              ["MOVIMENTO", "Movimentação"]
+            ].map(([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setPlayerSort(value as PlayerSort)}
+                className={`h-9 rounded-md border px-3 text-xs font-semibold transition ${
+                  playerSort === value
+                    ? "border-field bg-field text-white"
+                    : "border-line bg-white text-ink hover:border-field hover:text-field"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-3 grid gap-2">
             {data.adminPlayers.length === 0 ? (
               <div className="rounded-md border border-line bg-mist/70 p-4 text-sm text-coal/70">
                 Nenhum palpiteiro cadastrado.
               </div>
             ) : null}
-            {data.adminPlayers.map((player) => (
-              <div
-                key={player.id}
-                className="rounded-lg border border-line bg-white p-3 shadow-sm"
-              >
-                <form
-                  onSubmit={(event) => handleUpdatePlayer(event, player.id)}
-                  className="grid gap-3 xl:grid-cols-[minmax(150px,1fr)_minmax(160px,1fr)_minmax(150px,1fr)_auto] xl:items-end"
-                >
-                  <Field label="Nome">
-                    <TextInput name="name" defaultValue={player.name} required />
-                  </Field>
-                  <Field label="WhatsApp">
-                    <TextInput
-                      name="whatsapp"
-                      defaultValue={player.whatsappFormatted}
-                      onChange={(event) => {
-                        event.currentTarget.value = formatWhatsappInput(
-                          event.currentTarget.value
-                        );
-                      }}
-                      inputMode="tel"
-                      autoComplete="tel"
-                      required
-                    />
-                  </Field>
-                  <Field label="Bolão">
-                    <TextInput
-                      value={player.poolName ?? "Ainda sem bolão"}
-                      readOnly
-                    />
-                  </Field>
-                  <div className="flex flex-wrap gap-2 xl:justify-end">
-                    <button
-                      disabled={isBusy}
-                      className="h-10 rounded-md bg-field px-3 text-sm font-semibold text-white transition hover:bg-field/90 disabled:bg-coal/30"
-                    >
-                      Salvar
-                    </button>
-                    <button
-                      type="button"
-                      disabled={isBusy}
-                      onClick={() => resetPlayerPin(player.id)}
-                      className="h-10 rounded-md border border-line bg-white px-3 text-sm font-semibold text-ink transition hover:border-canary disabled:text-coal/35"
-                    >
-                      Resetar senha
-                    </button>
-                    <button
-                      type="button"
-                      disabled={isBusy}
-                      onClick={() => deletePlayer(player.id)}
-                      className="h-10 rounded-md border border-red-200 bg-red-50 px-3 text-sm font-semibold text-red-700 transition hover:bg-red-100 disabled:text-red-300"
-                    >
-                      Excluir
-                    </button>
-                  </div>
-                </form>
+            {sortedAdminPlayers.map((player) => {
+              const playerFinanceEntries = financeEntriesForPlayer(player.id);
 
-                <div className="mt-3 rounded-md border border-field/15 bg-field/5 p-3">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="text-sm font-semibold text-ink">
-                      Conta corrente
+              return (
+              <details
+                key={player.id}
+                className="group rounded-lg border border-line bg-white shadow-sm"
+              >
+                <summary className="grid cursor-pointer gap-2 rounded-lg px-3 py-3 text-sm marker:hidden md:grid-cols-[1.1fr_1fr_1fr_auto_auto] md:items-center">
+                  <div className="min-w-0">
+                    <p className="truncate text-base font-black text-ink">
+                      {player.name}
                     </p>
-                    <span className="rounded-md bg-white px-2.5 py-1 text-xs font-semibold text-coal/65">
-                      {player.whatsappFormatted}
-                    </span>
+                    <p className="text-xs font-semibold text-field group-open:hidden">
+                      Abrir conta corrente
+                    </p>
                   </div>
-                  <div className="mt-3 grid gap-2 text-sm md:grid-cols-2">
-                    {financeEntriesForPlayer(player.id).length === 0 ? (
+                  <span className="font-semibold text-coal/75">
+                    {player.whatsappFormatted}
+                  </span>
+                  <span className="font-semibold text-coal/75">
+                    {player.poolName ?? "Ainda sem bolão"}
+                  </span>
+                  <span className="rounded-md bg-mist px-2.5 py-1 text-xs font-black text-coal/70">
+                    {playerFinanceEntries.length} lançamento(s)
+                  </span>
+                  <span className="rounded-md border border-line bg-white px-2.5 py-1 text-xs font-black text-field">
+                    Detalhes
+                  </span>
+                </summary>
+
+                <div className="border-t border-line p-3">
+                  <form
+                    onSubmit={(event) => handleUpdatePlayer(event, player.id)}
+                    className="grid gap-3 xl:grid-cols-[minmax(150px,1fr)_minmax(180px,1fr)_minmax(150px,1fr)_auto] xl:items-end"
+                  >
+                    <Field label="Nome">
+                      <TextInput name="name" defaultValue={player.name} required />
+                    </Field>
+                    <Field label="WhatsApp">
+                      <WhatsappInput
+                        name="whatsapp"
+                        defaultValue={player.whatsappFormatted}
+                        required
+                      />
+                    </Field>
+                    <Field label="Bolão">
+                      <TextInput
+                        value={player.poolName ?? "Ainda sem bolão"}
+                        readOnly
+                      />
+                    </Field>
+                    <div className="flex flex-wrap gap-2 xl:justify-end">
+                      <button
+                        disabled={isBusy}
+                        className="h-10 rounded-md bg-field px-3 text-sm font-semibold text-white transition hover:bg-field/90 disabled:bg-coal/30"
+                      >
+                        Salvar
+                      </button>
+                      <button
+                        type="button"
+                        disabled={isBusy}
+                        onClick={() => resetPlayerPin(player.id)}
+                        className="h-10 rounded-md border border-line bg-white px-3 text-sm font-semibold text-ink transition hover:border-canary disabled:text-coal/35"
+                      >
+                        Resetar senha
+                      </button>
+                      <button
+                        type="button"
+                        disabled={isBusy}
+                        onClick={() => deletePlayer(player.id)}
+                        className="h-10 rounded-md border border-red-200 bg-red-50 px-3 text-sm font-semibold text-red-700 transition hover:bg-red-100 disabled:text-red-300"
+                      >
+                        Excluir
+                      </button>
+                    </div>
+                  </form>
+
+                  <div className="mt-3 rounded-md border border-field/15 bg-field/5 p-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="text-sm font-semibold text-ink">
+                        Conta corrente
+                      </p>
+                      <span className="rounded-md bg-white px-2.5 py-1 text-xs font-semibold text-coal/65">
+                        {player.whatsappFormatted}
+                      </span>
+                    </div>
+                    <div className="mt-3 grid gap-2 text-sm md:grid-cols-2">
+                      {playerFinanceEntries.length === 0 ? (
                       <p className="rounded-md bg-white px-3 py-2 text-coal/70">
                         Nenhum palpite financeiro registrado.
                       </p>
                     ) : null}
-                    {financeEntriesForPlayer(player.id).map((entry) => (
+                    {playerFinanceEntries.map((entry) => (
                       <div
                         key={entry.id}
                         className="flex flex-wrap justify-between gap-2 rounded-md bg-white px-3 py-2"
@@ -1985,10 +2115,12 @@ export function AdminPanel({ initialData }: { initialData: AdminPoolData }) {
                         </span>
                       </div>
                     ))}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              </details>
+              );
+            })}
           </div>
         </section>
         ) : null}
