@@ -1,6 +1,10 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import {
+  DEFAULT_WHATSAPP_PREFIX,
+  formatWhatsappInput
+} from "@/lib/phone";
 
 type IdentifiedPlayer = {
   id: string;
@@ -20,31 +24,9 @@ const PLAYER_STORAGE_KEY = "bolao-d-rosa-do-brassssillll-player";
 const SELECTED_POOL_STORAGE_KEY = "bolao-d-rosa-do-brassssillll-pool";
 const SWITCH_PLAYER_STORAGE_KEY = "bolao-d-rosa-switch-player";
 
-function formatWhatsappInput(value: string) {
-  const digits = value.replace(/\D/g, "");
-  const nationalDigits =
-    digits.startsWith("55") && digits.length > 11 ? digits.slice(2, 13) : digits.slice(0, 11);
-  const ddd = nationalDigits.slice(0, 2);
-  const local = nationalDigits.slice(2);
-
-  if (nationalDigits.length <= 2) {
-    return ddd ? `(${ddd}` : "";
-  }
-
-  if (local.length <= 4) {
-    return `(${ddd}) ${local}`;
-  }
-
-  if (local.length <= 8) {
-    return `(${ddd}) ${local.slice(0, 4)}-${local.slice(4)}`;
-  }
-
-  return `(${ddd}) ${local.slice(0, 5)}-${local.slice(5, 9)}`;
-}
-
 export function PlayerEntry() {
   const [name, setName] = useState("");
-  const [whatsapp, setWhatsapp] = useState("");
+  const [whatsapp, setWhatsapp] = useState(DEFAULT_WHATSAPP_PREFIX);
   const [pin, setPin] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -159,6 +141,10 @@ export function PlayerEntry() {
             <p className="mt-2 text-sm font-semibold leading-snug text-coal/70 sm:text-base">
               Digite seu WhatsApp e sua senha de 4 números.
             </p>
+            <p className="mt-1 text-xs font-semibold leading-snug text-coal/55">
+              O +55 já vem preenchido. Se o número for de outro país, apague e
+              digite o DDI correto.
+            </p>
             <p className="mt-2 rounded-md border border-canary/45 bg-mist/90 px-3 py-2 text-xs font-semibold leading-snug text-coal/75 sm:text-sm">
               Se ainda não tiver cadastro, sua conta será criada automaticamente.
             </p>
@@ -170,10 +156,10 @@ export function PlayerEntry() {
               <input
                 value={whatsapp}
                 onChange={(event) => setWhatsapp(formatWhatsappInput(event.target.value))}
-                placeholder="(91) 98258-5313"
+                placeholder="+55 (91) 98258-5313"
                 type="tel"
                 inputMode="tel"
-                pattern="[0-9()\\s-]*"
+                pattern="[+0-9()\\s-]*"
                 autoComplete="tel"
                 className="h-10 rounded-md border border-line px-3 text-base font-normal text-ink outline-none transition focus:border-field focus:ring-2 focus:ring-field/15 sm:h-11 sm:text-sm"
               />

@@ -86,15 +86,21 @@ export async function getWhatsappConfig(): Promise<WhatsappConfig> {
 }
 
 export function formatWhatsappNumber(phone: string) {
+  const explicitCountryCode = phone.trim().startsWith("+");
   const digits = phone.replace(/\D/g, "");
+
+  if (explicitCountryCode && /^[1-9]\d{7,14}$/.test(digits)) {
+    return digits;
+  }
+
   const withCountryCode =
     digits.startsWith("55") && (digits.length === 12 || digits.length === 13)
       ? digits
       : digits.length === 10 || digits.length === 11
         ? `55${digits}`
-        : "";
+        : digits;
 
-  return /^55\d{10,11}$/.test(withCountryCode) ? withCountryCode : null;
+  return /^[1-9]\d{7,14}$/.test(withCountryCode) ? withCountryCode : null;
 }
 
 function hasSendConfig(config: WhatsappConfig) {
@@ -172,6 +178,15 @@ function formatKickoff(value: Date | string | undefined) {
   return formatBrasiliaDateTime(value);
 }
 
+function gameLabel(game: WhatsappGame) {
+  const opponent = [game.opponentFlag, game.opponent]
+    .filter(Boolean)
+    .join(" ")
+    .trim();
+
+  return `🇧🇷 Brasil x ${opponent}`;
+}
+
 function firstWarning(results: WhatsappSendResult[]) {
   return results.find((result) => result.warning)?.warning;
 }
@@ -181,6 +196,7 @@ export async function sendPredictionCreatedMessage(
   game: WhatsappGame,
   prediction: WhatsappPrediction
 ) {
+  void prediction;
   const siteUrl = await siteUrlText();
 
   return sendWhatsappMessage(
@@ -192,10 +208,7 @@ Olá, ${player.name}!
 Seu palpite foi registrado com sucesso.
 
 Jogo:
-Brasil x ${game.opponent}
-
-Seu palpite:
-Brasil ${prediction.brazilGoals} x ${prediction.opponentGoals} ${game.opponent}
+${gameLabel(game)}
 
 Acesse o bolão:
 ${siteUrl}
@@ -209,6 +222,7 @@ export async function sendPredictionUpdatedMessage(
   game: WhatsappGame,
   prediction: WhatsappPrediction
 ) {
+  void prediction;
   const siteUrl = await siteUrlText();
 
   return sendWhatsappMessage(
@@ -220,10 +234,7 @@ Olá, ${player.name}!
 Seu palpite foi atualizado com sucesso.
 
 Jogo:
-Brasil x ${game.opponent}
-
-Novo palpite:
-Brasil ${prediction.brazilGoals} x ${prediction.opponentGoals} ${game.opponent}
+${gameLabel(game)}
 
 Acesse o bolão:
 ${siteUrl}
@@ -247,9 +258,31 @@ Olá, ${player.name}!
 Seu palpite foi excluído.
 
 Jogo:
-Brasil x ${game.opponent}
+${gameLabel(game)}
 
 Você pode fazer um novo palpite até 10 minutos antes do jogo.
+
+Acesse o bolão:
+${siteUrl}`
+  );
+}
+
+export async function sendPredictionAdminDeletedMessage(
+  player: WhatsappPlayer,
+  game: WhatsappGame
+) {
+  const siteUrl = await siteUrlText();
+
+  return sendWhatsappMessage(
+    player.whatsapp,
+    `⚽ Bolão Copa 2026
+
+Olá, ${player.name}!
+
+Um palpite seu foi excluído pelo admin do bolão.
+
+Jogo:
+${gameLabel(game)}
 
 Acesse o bolão:
 ${siteUrl}`
@@ -261,6 +294,7 @@ export async function sendPredictionPaidMessage(
   game: WhatsappGame,
   prediction: WhatsappPrediction
 ) {
+  void prediction;
   const siteUrl = await siteUrlText();
 
   return sendWhatsappMessage(
@@ -269,13 +303,10 @@ export async function sendPredictionPaidMessage(
 
 Olá, ${player.name}!
 
-Pagamento confirmado. Seu palpite está registrado.
+Pagamento confirmado pelo admin. Seu palpite está registrado.
 
 Jogo:
-🇧🇷 Brasil x ${game.opponentFlag ?? ""} ${game.opponent}
-
-Palpite registrado:
-Brasil ${prediction.brazilGoals} x ${prediction.opponentGoals} ${game.opponent}
+${gameLabel(game)}
 
 Acesse o bolão:
 ${siteUrl}
@@ -308,14 +339,15 @@ export async function sendNewGameMessageToPlayers(game: WhatsappGame) {
 
 Olá, ${player.name}!
 
-Um novo jogo foi cadastrado:
+Admin do bolão cadastrou um novo jogo.
 
-🇧🇷 Brasil x ${game.opponentFlag ?? ""} ${game.opponent}
+Jogo:
+${gameLabel(game)}
 
 Data e hora:
 ${formatKickoff(game.kickoffAt)}
 
-Faça seu palpite até 10 minutos antes do jogo.
+Faça seu palpite até 10 minutos antes do início.
 
 Participe do bolão:
 ${config.siteUrl}
@@ -341,14 +373,32 @@ Boa sorte!`
 
 export async function testWhatsappMessage() {
   const config = await getWhatsappConfig();
-  const text =
-    config.testMessage ||
-    `Teste do Bolão Copa 2026.
+  const text = `✅ Teste do WhatsApp do Bet Barão
+
+Se você recebeu esta mensagem, a Evolution API está conectada corretamente.
 
 Acesse o bolão:
 ${config.siteUrl}`;
 
   return sendWhatsappMessage(config.testNumber, text);
+}
+
+export async function sendAdminPlayerCreatedMessage(player: WhatsappPlayer) {
+  const siteUrl = await siteUrlText();
+
+  return sendWhatsappMessage(
+    player.whatsapp,
+    `⚽ Bet Barão by d. Rosa
+
+Olá, ${player.name}!
+
+Seu acesso foi cadastrado pelo admin do bolão.
+
+Entre com este WhatsApp e crie sua senha de 4 números no primeiro acesso.
+
+Acessar o bolão:
+${siteUrl}`
+  );
 }
 
 export function publicWhatsappConfig(config: WhatsappConfig) {

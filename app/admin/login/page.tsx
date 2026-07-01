@@ -27,11 +27,11 @@ export default function AdminLoginPage({
       <section className="w-full max-w-md rounded-lg border border-canary/70 bg-white/95 p-6 shadow-panel backdrop-blur">
         <div className="text-center">
           <Image
-            src="/brand/logos/logo_horizontal.png"
+            src="/brand/logos/logo_principal.png"
             alt="Bet Barão by d. Rosa"
-            width={320}
-            height={120}
-            className="mx-auto h-20 w-auto object-contain"
+            width={220}
+            height={220}
+            className="mx-auto h-28 w-auto object-contain"
             priority
           />
           <p className="mt-3 text-xs font-black uppercase text-field">

@@ -5,6 +5,10 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import type { AdminGame, AdminPoolData } from "@/lib/types";
 import { formatBrasiliaDateTime, toBrasiliaDateTimeLocal } from "@/lib/datetime";
 import { getOpponentFlag, WORLD_CUP_2026_TEAMS } from "@/lib/flags";
+import {
+  DEFAULT_WHATSAPP_PREFIX,
+  formatWhatsappInput
+} from "@/lib/phone";
 
 type ApiResult<T> = T & {
   error?: string;
@@ -97,7 +101,20 @@ function formatDecimalInput(value: number) {
 }
 
 function auditActionLabel(action: string) {
-  return action === "EXCLUIDO" ? "EXCLUÍDO" : action;
+  if (action === "EXCLUIDO") {
+    return "EXCLUÍDO";
+  }
+
+  if (action === "EXCLUIDO_ADMIN") {
+    return "EXCLUÍDO PELO ADMIN";
+  }
+
+  return action;
+}
+
+function evolutionManagerUrl(baseUrl: string) {
+  const normalized = baseUrl.trim().replace(/\/+$/, "");
+  return normalized ? `${normalized}/manager` : "";
 }
 
 function gamePayload(form: HTMLFormElement) {
@@ -368,7 +385,10 @@ export function AdminPanel({ initialData }: { initialData: AdminPoolData }) {
 
     setWhatsappConfig((current) => ({
       ...result.config,
-      apiKey: current.apiKey
+      apiKey: current.apiKey,
+      testNumber: result.config.testNumber
+        ? formatWhatsappInput(result.config.testNumber)
+        : ""
     }));
   }
 
@@ -827,6 +847,24 @@ export function AdminPanel({ initialData }: { initialData: AdminPoolData }) {
     );
   }
 
+  async function handleCreatePlayer(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+
+    await submitJson(
+      "/api/admin/players",
+      "POST",
+      {
+        name: String(formData.get("name") ?? ""),
+        whatsapp: String(formData.get("whatsapp") ?? ""),
+        poolId: String(formData.get("poolId") ?? "")
+      },
+      "Palpiteiro cadastrado. Ele criará a senha no primeiro acesso."
+    );
+    form.reset();
+  }
+
   async function handleUpdatePlayer(
     event: FormEvent<HTMLFormElement>,
     playerId: string
@@ -867,6 +905,23 @@ export function AdminPanel({ initialData }: { initialData: AdminPoolData }) {
     );
   }
 
+  async function deleteAdminPrediction(predictionId: string) {
+    if (
+      !window.confirm(
+        "Excluir este palpite? O palpiteiro será avisado por WhatsApp se a integração estiver configurada."
+      )
+    ) {
+      return;
+    }
+
+    await submitJson(
+      `/api/admin/predictions/${predictionId}`,
+      "DELETE",
+      undefined,
+      "Palpite excluído pelo admin."
+    );
+  }
+
   async function setPredictionPaid(predictionId: string, paid: boolean) {
     await submitJson(
       `/api/admin/predictions/${predictionId}/payment`,
@@ -889,14 +944,14 @@ export function AdminPanel({ initialData }: { initialData: AdminPoolData }) {
       className="admin-brand-bg min-h-screen bg-fixed"
     >
       <header className="border-b border-canary/70 bg-white/95 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-5 sm:flex-row sm:items-center sm:justify-between lg:px-6">
-          <div className="flex items-center gap-3">
+        <div className="mx-auto grid max-w-7xl gap-4 px-4 py-5 text-center lg:px-6">
+          <div className="grid justify-items-center gap-3">
             <Image
-              src="/brand/logos/logo_simbolo.png"
-              alt="Símbolo Bet Barão"
-              width={56}
-              height={56}
-              className="h-12 w-12 shrink-0 rounded-md object-contain shadow-sm"
+              src="/brand/logos/logo_principal.png"
+              alt="Bet Barão by d. Rosa"
+              width={220}
+              height={220}
+              className="h-24 w-auto object-contain sm:h-28"
               priority
             />
             <div>
@@ -909,7 +964,7 @@ export function AdminPanel({ initialData }: { initialData: AdminPoolData }) {
               </p>
             </div>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap justify-center gap-2">
             <a
               href="/"
               className="inline-flex h-10 items-center justify-center rounded-md border border-line bg-white px-4 text-sm font-semibold text-ink transition hover:border-field hover:text-field"
@@ -1387,10 +1442,10 @@ export function AdminPanel({ initialData }: { initialData: AdminPoolData }) {
                 onChange={(event) =>
                   setWhatsappConfig((current) => ({
                     ...current,
-                    testNumber: event.target.value
+                    testNumber: formatWhatsappInput(event.target.value)
                   }))
                 }
-                placeholder="91 98258-5313"
+                placeholder="+55 (91) 98258-5313"
               />
             </Field>
             <Field label="Mensagem de teste">
@@ -1434,6 +1489,57 @@ export function AdminPanel({ initialData }: { initialData: AdminPoolData }) {
               Telefone enviado no formato 55DDDNUMERO. Se o número tiver 11
               dígitos, o sistema prefixa 55 automaticamente.
             </p>
+          </div>
+
+          <div className="mt-4 rounded-md border border-line bg-field/5 p-4 text-sm">
+            <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+              <div>
+                <h3 className="font-semibold text-ink">
+                  Manager da Evolution API
+                </h3>
+                <p className="mt-1 text-coal/70">
+                  Use o Manager para acompanhar a instância, gerar QR Code,
+                  reconectar o WhatsApp e trocar o número vinculado à instância.
+                </p>
+              </div>
+
+              {evolutionManagerUrl(whatsappConfig.baseUrl) ? (
+                <a
+                  href={evolutionManagerUrl(whatsappConfig.baseUrl)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex h-10 shrink-0 items-center justify-center rounded-md border border-field/30 bg-field/5 px-4 text-sm font-semibold text-field transition hover:bg-field/10"
+                >
+                  Abrir Evolution Manager
+                </a>
+              ) : (
+                <span className="inline-flex min-h-10 shrink-0 items-center rounded-md border border-canary/40 bg-canary/15 px-4 text-sm font-semibold text-ink">
+                  Informe a URL base da Evolution API para abrir o Manager.
+                </span>
+              )}
+            </div>
+
+            <details className="mt-4 rounded-md border border-line bg-mist/60 p-3">
+              <summary className="cursor-pointer font-semibold text-ink">
+                Como trocar o número / gerar novo QR Code
+              </summary>
+              <ol className="mt-3 list-decimal space-y-1 pl-5 text-coal/75">
+                <li>Abra o Evolution Manager.</li>
+                <li>Entre na instância configurada no campo Instance Name.</li>
+                <li>Desconecte o WhatsApp atual se ele estiver conectado.</li>
+                <li>Gere um novo QR Code para a mesma instância.</li>
+                <li>
+                  No celular novo, abra WhatsApp &gt; Configurações &gt;
+                  Dispositivos conectados &gt; Conectar dispositivo.
+                </li>
+                <li>Escaneie o novo QR Code.</li>
+                <li>Volte aqui e clique em Testar envio.</li>
+              </ol>
+              <p className="mt-3 rounded-md border border-line bg-white px-3 py-2 text-xs font-semibold text-coal/70">
+                A instância usada pelo bolão é a do campo Instance Name. Hoje,
+                em produção, usamos bolao.
+              </p>
+            </details>
           </div>
         </section>
         ) : null}
@@ -1744,6 +1850,48 @@ export function AdminPanel({ initialData }: { initialData: AdminPoolData }) {
             </p>
           </div>
 
+          <form
+            onSubmit={handleCreatePlayer}
+            className="mt-5 grid gap-3 rounded-md border border-field/15 bg-field/5 p-3 xl:grid-cols-[minmax(160px,1fr)_minmax(160px,1fr)_minmax(180px,1fr)_auto] xl:items-end"
+          >
+            <Field label="Novo palpiteiro">
+              <TextInput name="name" placeholder="Nome completo" required />
+            </Field>
+            <Field label="WhatsApp">
+              <TextInput
+                name="whatsapp"
+                defaultValue={DEFAULT_WHATSAPP_PREFIX}
+                onChange={(event) => {
+                  event.currentTarget.value = formatWhatsappInput(
+                    event.currentTarget.value
+                  );
+                }}
+                placeholder="+55 (91) 98258-5313"
+                inputMode="tel"
+                autoComplete="tel"
+                required
+              />
+            </Field>
+            <Field label="Bolão">
+              <SelectInput name="poolId" required>
+                {data.adminPools.length === 0 ? (
+                  <option value="">Cadastre um bolão primeiro</option>
+                ) : null}
+                {data.adminPools.map((pool) => (
+                  <option key={pool.id} value={pool.id}>
+                    {pool.name}
+                  </option>
+                ))}
+              </SelectInput>
+            </Field>
+            <button
+              disabled={isBusy || data.adminPools.length === 0}
+              className="h-10 rounded-md bg-field px-4 text-sm font-semibold text-white transition hover:bg-field/90 disabled:bg-coal/30"
+            >
+              Cadastrar palpiteiro
+            </button>
+          </form>
+
           <div className="mt-5 grid gap-3">
             {data.adminPlayers.length === 0 ? (
               <div className="rounded-md border border-line bg-mist/70 p-4 text-sm text-coal/70">
@@ -1766,8 +1914,13 @@ export function AdminPanel({ initialData }: { initialData: AdminPoolData }) {
                     <TextInput
                       name="whatsapp"
                       defaultValue={player.whatsappFormatted}
-                      inputMode="numeric"
-                      autoComplete="tel-national"
+                      onChange={(event) => {
+                        event.currentTarget.value = formatWhatsappInput(
+                          event.currentTarget.value
+                        );
+                      }}
+                      inputMode="tel"
+                      autoComplete="tel"
                       required
                     />
                   </Field>
@@ -2063,15 +2216,18 @@ export function AdminPanel({ initialData }: { initialData: AdminPoolData }) {
                   <th className="border-y border-line px-3 py-3 font-semibold">
                     Pagamento
                   </th>
-                  <th className="rounded-r-md border-y border-r border-line px-3 py-3 font-semibold">
+                  <th className="border-y border-line px-3 py-3 font-semibold">
                     Atualizado
+                  </th>
+                  <th className="rounded-r-md border-y border-r border-line px-3 py-3 font-semibold">
+                    Ações
                   </th>
                 </tr>
               </thead>
               <tbody>
                 {filteredAdminPredictions.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-3 py-8 text-center text-coal/60">
+                    <td colSpan={7} className="px-3 py-8 text-center text-coal/60">
                       Nenhum palpite encontrado para os filtros.
                     </td>
                   </tr>
@@ -2105,6 +2261,16 @@ export function AdminPanel({ initialData }: { initialData: AdminPoolData }) {
                     </td>
                     <td className="border-b border-line px-3 py-3 text-coal/65">
                       {formatDateTime(prediction.updatedAt)}
+                    </td>
+                    <td className="border-b border-line px-3 py-3">
+                      <button
+                        type="button"
+                        disabled={isBusy}
+                        onClick={() => deleteAdminPrediction(prediction.id)}
+                        className="h-8 rounded-md border border-red-200 bg-red-50 px-3 text-xs font-semibold text-red-700 transition hover:bg-red-100 disabled:text-red-300"
+                      >
+                        Excluir
+                      </button>
                     </td>
                   </tr>
                 ))}

@@ -45,11 +45,11 @@ export const tutorialPages: TutorialPageData[] = [
     id: "login",
     title: "Login com WhatsApp e senha",
     text:
-      "Digite seu WhatsApp com DDD e sua senha numérica de 4 dígitos para entrar direto no bolão.",
+      "Digite seu WhatsApp com +55 e DDD, ou substitua pelo DDI correto, e sua senha numérica de 4 dígitos para entrar direto no bolão.",
     image: "/brand/tutorial/tutorial_04_login.png",
     imageAlt: "Cartoon explicando login por WhatsApp e senha de quatro números",
     cta: "Continuar",
-    bullets: ["WhatsApp com DDD", "Senha de 4 números", "Acesso direto"]
+    bullets: ["WhatsApp com DDI", "Senha de 4 números", "Acesso direto"]
   },
   {
     id: "automatic-account",

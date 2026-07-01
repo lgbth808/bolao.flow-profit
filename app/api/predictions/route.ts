@@ -4,6 +4,7 @@ import { isPlayerPinValid } from "@/lib/player-pin";
 import { recordPredictionAudit } from "@/lib/prediction-audit";
 import { isPredictionLocked } from "@/lib/pool-rules";
 import { prisma } from "@/lib/prisma";
+import { sendPredictionCreatedMessage } from "@/lib/whatsapp";
 
 export const dynamic = "force-dynamic";
 
@@ -73,7 +74,16 @@ export async function POST(request: Request) {
       }
     });
 
-    return ok({ prediction });
+    const whatsappResult = await sendPredictionCreatedMessage(
+      player,
+      game,
+      prediction
+    );
+
+    return ok({
+      prediction,
+      whatsappWarning: whatsappResult.warning ?? null
+    });
   } catch (error) {
     return fail(error instanceof Error ? error.message : "Erro ao salvar palpite.", 400);
   }

@@ -27,7 +27,7 @@ export async function recordPredictionAudit({
   predictionId?: string | null;
   player: AuditPlayer;
   game: AuditGame;
-  action: "CRIADO" | "EDITADO" | "EXCLUIDO";
+  action: "CRIADO" | "EDITADO" | "EXCLUIDO" | "EXCLUIDO_ADMIN";
   previous: AuditScore;
   next: AuditScore;
 }) {
