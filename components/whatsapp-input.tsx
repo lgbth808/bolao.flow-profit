@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { CountryCode } from "libphonenumber-js/min";
 import {
   buildWhatsappValue,
@@ -50,6 +50,7 @@ export function WhatsappInput({
   );
   const [countryModalOpen, setCountryModalOpen] = useState(false);
   const [countrySearch, setCountrySearch] = useState("");
+  const phoneInputRef = useRef<HTMLInputElement>(null);
   const currentValue = value ?? internalValue;
   const countries = useMemo(() => getWhatsappCountries("pt-BR"), []);
   const currentCountry =
@@ -107,11 +108,19 @@ export function WhatsappInput({
     }
   }
 
+  function closeCountryModal() {
+    setCountrySearch("");
+    setCountryModalOpen(false);
+
+    window.requestAnimationFrame(() => {
+      phoneInputRef.current?.focus();
+    });
+  }
+
   function selectCountry(country: CountryCode) {
     setSelectedCountry(country);
     emit(`+${countryCallingCode(country)} `);
-    setCountrySearch("");
-    setCountryModalOpen(false);
+    closeCountryModal();
   }
 
   return (
@@ -134,8 +143,18 @@ export function WhatsappInput({
           {currentCountry.flag} +{currentCountry.dialCode}
         </button>
         <input
+          ref={phoneInputRef}
           value={nationalValue}
-          onChange={(event) => handleNationalChange(event.target.value)}
+          onChange={(event) => {
+            const nextValue = event.target.value;
+
+            if (nextValue.trimStart().startsWith("+")) {
+              handleManualInternational(nextValue);
+              return;
+            }
+
+            handleNationalChange(nextValue);
+          }}
           onPaste={(event) => {
             const pasted = event.clipboardData.getData("text");
 
@@ -177,7 +196,7 @@ export function WhatsappInput({
               </div>
               <button
                 type="button"
-                onClick={() => setCountryModalOpen(false)}
+                onClick={closeCountryModal}
                 className="flex h-9 w-9 items-center justify-center rounded-md border border-line text-lg font-semibold text-coal transition hover:border-field hover:text-field"
                 aria-label="Fechar seleção de país"
               >
@@ -218,7 +237,7 @@ export function WhatsappInput({
 
             <button
               type="button"
-              onClick={() => setCountryModalOpen(false)}
+              onClick={closeCountryModal}
               className="mt-4 h-10 w-full rounded-md border border-line bg-white px-4 text-sm font-semibold text-ink transition hover:border-field hover:text-field"
             >
               Voltar ao número

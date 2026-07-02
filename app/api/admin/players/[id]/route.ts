@@ -3,7 +3,7 @@ import { fail, ok, readJson } from "@/lib/api";
 import { normalizeCurrencyInput } from "@/lib/money";
 import {
   formatBrazilianWhatsapp,
-  normalizeBrazilianWhatsapp
+  normalizeWhatsapp
 } from "@/lib/phone";
 import { prisma } from "@/lib/prisma";
 
@@ -25,7 +25,7 @@ export async function PATCH(
     const whatsapp =
       input.whatsapp === undefined
         ? undefined
-        : normalizeBrazilianWhatsapp(input.whatsapp);
+        : normalizeWhatsapp(input.whatsapp);
 
     if (whatsapp) {
       const current = await prisma.player.findUnique({

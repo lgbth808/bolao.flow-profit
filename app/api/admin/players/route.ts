@@ -2,7 +2,7 @@ import { z } from "zod";
 import { fail, ok, readJson } from "@/lib/api";
 import {
   formatBrazilianWhatsapp,
-  normalizeBrazilianWhatsapp
+  normalizeWhatsapp
 } from "@/lib/phone";
 import { prisma } from "@/lib/prisma";
 import { sendAdminPlayerCreatedMessage } from "@/lib/whatsapp";
@@ -18,7 +18,7 @@ const playerCreateSchema = z.object({
 export async function POST(request: Request) {
   try {
     const input = playerCreateSchema.parse(await readJson(request));
-    const whatsapp = normalizeBrazilianWhatsapp(input.whatsapp);
+    const whatsapp = normalizeWhatsapp(input.whatsapp);
     const [pool, existing] = await Promise.all([
       prisma.pool.findUnique({ where: { id: input.poolId } }),
       prisma.player.findUnique({ where: { whatsapp } })

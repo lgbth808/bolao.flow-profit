@@ -231,16 +231,20 @@ export function formatWhatsappInput(value: string) {
   return buildWhatsappValue(DEFAULT_WHATSAPP_COUNTRY, trimmed).trimEnd();
 }
 
-export function normalizeBrazilianWhatsapp(value: string) {
+export function normalizeWhatsapp(value: string) {
   const parsed = parseWhatsappPhone(value);
 
   if (!parsed?.isPossible()) {
     throw new Error(
-      "Informe um WhatsApp com DDI e numero validos. Ex.: +55 (91) 98258-5313."
+      "Informe um WhatsApp com DDI e número válidos. Ex.: +55 (91) 98258-5313."
     );
   }
 
   return parsed.number.replace(/\D/g, "");
+}
+
+export function normalizeBrazilianWhatsapp(value: string) {
+  return normalizeWhatsapp(value);
 }
 
 export function normalizeWhatsappForSubmit(value: string) {

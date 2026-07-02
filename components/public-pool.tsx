@@ -286,6 +286,7 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
   const [hasLoadedSavedPlayer, setHasLoadedSavedPlayer] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState("");
   const [isPixOpen, setIsPixOpen] = useState(false);
+  const [pixDialogTitle, setPixDialogTitle] = useState("Aposta salva");
   const [copyMessage, setCopyMessage] = useState("");
   const [now, setNow] = useState(() => new Date());
 
@@ -334,6 +335,13 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
     setPin("");
     setError("");
     setPinModalAction(action);
+  }
+
+  function openPixInstructions(gameId: string, title = "Instruções de pagamento") {
+    setSelectedGameId(gameId);
+    setCopyMessage("");
+    setPixDialogTitle(title);
+    setIsPixOpen(true);
   }
 
   function closePinModal() {
@@ -513,7 +521,7 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
         setFeedbackMessage("Aposta atualizada.");
       } else {
         setFeedbackMessage("");
-        setIsPixOpen(true);
+        openPixInstructions(selectedGame.id, "Aposta salva");
       }
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Erro ao salvar palpite.");
@@ -692,10 +700,10 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
         <div className="mx-auto flex max-w-5xl justify-center px-4 py-3 lg:px-6">
           <a href="/apostas" className="inline-flex items-center justify-center">
             <Image
-              src="/brand/logos/logo_principal.png"
+              src="/brand/logos/logo_horizontal.png"
               alt="Bet Barão by d. Rosa"
               width={240}
-              height={180}
+              height={120}
               className="h-16 w-auto object-contain sm:h-20"
               priority
             />
@@ -940,10 +948,9 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
                         </div>
                       </div>
                       <p className="mt-2 rounded-md border border-field/20 bg-white px-3 py-2 text-xs font-semibold leading-relaxed text-ink sm:text-sm">
-                        <span className="font-black">Regra:</span> O placar final
-                        = 1º e 2º tempos + prorrogação, caso haja. Você verá os
-                        palpites dos demais participantes somente após o
-                        fechamento das apostas.
+                        <span className="font-black">Regra:</span>{" "}
+                        {game.predictionRule} Você verá os palpites dos demais
+                        participantes 10 minutos antes do jogo.
                       </p>
                       <div className="mt-3 rounded-lg border border-field/15 bg-white/85 p-3">
                         <div className="mb-3 flex items-center justify-between gap-3">
@@ -1069,6 +1076,14 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
                                   </button>
                                   <button
                                     type="button"
+                                    disabled={isBusy}
+                                    onClick={() => openPixInstructions(game.id)}
+                                    className="h-8 rounded-md border border-canary/50 bg-canary/20 px-3 text-xs font-semibold text-ink transition hover:border-canary hover:bg-canary/30 disabled:text-coal/35"
+                                  >
+                                    Pagar
+                                  </button>
+                                  <button
+                                    type="button"
                                     disabled={isBusy || game.isLocked}
                                     onClick={() => deletePrediction(prediction.id)}
                                     className="h-8 rounded-md border border-red-200 bg-red-50 px-3 text-xs font-semibold text-red-700 transition hover:bg-red-100 disabled:text-red-300"
@@ -1082,27 +1097,39 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
                         </div>
                       </div>
 
-                      <div className="mt-3 rounded-md border border-white bg-white/85 px-3 py-3">
-                        <div className="flex flex-wrap items-start justify-between gap-3">
-                          <div>
-                            <p className="text-sm font-semibold text-ink">
-                              Palpites
-                            </p>
-                            <p className="mt-1 text-xs font-semibold text-coal/60">
-                              Os palpites dos demais participantes serão exibidos
-                              somente após o fechamento das apostas.
-                            </p>
+                      <details
+                        open={game.isScoreRevealed || undefined}
+                        className="mt-3 rounded-md border border-white bg-white/85 px-3 py-3"
+                      >
+                        <summary className="cursor-pointer list-none">
+                          <div className="flex flex-wrap items-start justify-between gap-3">
+                            <div>
+                              <p className="text-sm font-semibold text-ink">
+                                Palpites gerais
+                              </p>
+                              <p className="mt-1 text-xs font-semibold text-coal/60">
+                                Palpites serão exibidos 10 minutos antes do jogo.
+                              </p>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
+                              <span className="rounded-md bg-field/10 px-2.5 py-1 text-field">
+                                {game.prizeAmountFormatted}
+                              </span>
+                              <span className="rounded-md bg-mist px-2.5 py-1 text-coal">
+                                {game.paidPredictionCount} pagos ·{" "}
+                                {game.pendingPaymentCount} pendentes
+                              </span>
+                              <span className="rounded-full border border-canary/50 px-2.5 py-1 text-[10px] font-black uppercase text-field">
+                                Abrir
+                              </span>
+                            </div>
                           </div>
-                          <div className="flex flex-wrap gap-2 text-xs font-semibold">
-                            <span className="rounded-md bg-field/10 px-2.5 py-1 text-field">
-                              {game.prizeAmountFormatted}
-                            </span>
-                            <span className="rounded-md bg-mist px-2.5 py-1 text-coal">
-                              {game.paidPredictionCount} pagos ·{" "}
-                              {game.pendingPaymentCount} pendentes
-                            </span>
-                          </div>
-                        </div>
+                        </summary>
+
+                        <p className="mt-3 rounded-md bg-canary/15 px-3 py-2 text-xs font-semibold text-ink">
+                          Antes desse prazo, os palpites dos outros participantes
+                          podem aparecer embaçados.
+                        </p>
 
                         <div className="mt-3 overflow-x-auto">
                           <table className="min-w-full border-separate border-spacing-0 text-left text-sm">
@@ -1182,7 +1209,7 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
                         <p className="mt-2 text-[11px] font-semibold text-coal/55">
                           * indica palpite aguardando confirmação de pagamento.
                         </p>
-                      </div>
+                      </details>
 
                     </details>
                   );
@@ -1305,7 +1332,7 @@ export function PublicPool({ initialData }: { initialData: PublicPoolData }) {
                   id="pix-dialog-title"
                   className="text-lg font-semibold text-ink"
                 >
-                  Aposta salva
+                  {pixDialogTitle}
                 </h3>
                 <p className="mt-1 text-sm text-coal/70">
                   Depois do PIX, envie o comprovante no WhatsApp com o jogo

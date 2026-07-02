@@ -54,16 +54,6 @@ type WhatsappConfigForm = {
   testMessage: string;
 };
 
-type WhatsappRuleForm = {
-  key: string;
-  label: string;
-  trigger: string;
-  implemented: boolean;
-  enabled: boolean;
-  template: string;
-  placeholders: string[];
-};
-
 type AdminSection =
   | "pools"
   | "api"
@@ -83,22 +73,6 @@ const LEGACY_PREDICTION_RULE =
 const DEFAULT_PREDICTION_RULE =
   "Vale para o placar do 1º e 2º tempos + prorrogação, caso haja.";
 const AUTO_UPDATE_STORAGE_KEY = "bolao-d-rosa-api-football-auto-update";
-const WHATSAPP_BRAND_HEADER = `👑 bet Barão by d. Rosa
-
-⚽ Trionda • Bolão Copa 2026`;
-const WHATSAPP_PREVIEW_CONTEXT: Record<string, string> = {
-  playerName: "Nana",
-  adminName: "Admin do bolão",
-  opponent: "Noruega",
-  opponentFlag: "🇳🇴",
-  gameLabel: "🇧🇷 Brasil x 🇳🇴 Noruega",
-  kickoffAt: "05/07/2026, 17:00",
-  siteUrl: "https://bolao.flow-profit.com",
-  instanceName: "bolao",
-  brandName: "bet Barão by d. Rosa",
-  testMessage: "se você recebeu esta mensagem, a Evolution API está conectada corretamente."
-};
-
 function formatDateTime(value: string) {
   return formatBrasiliaDateTime(value);
 }
@@ -138,16 +112,6 @@ function auditActionLabel(action: string) {
 function evolutionManagerUrl(baseUrl: string) {
   const normalized = baseUrl.trim().replace(/\/+$/, "");
   return normalized ? `${normalized}/manager` : "";
-}
-
-function previewWhatsappTemplate(template: string) {
-  const body = template
-    .replace(/\{([a-zA-Z][a-zA-Z0-9]*)\}/g, (match, key) => {
-      return WHATSAPP_PREVIEW_CONTEXT[key] ?? match;
-    })
-    .trim();
-
-  return `${WHATSAPP_BRAND_HEADER}\n\n${body}`;
 }
 
 function gamePayload(form: HTMLFormElement) {
@@ -208,13 +172,26 @@ function matchesPaymentFilter(isPaid: boolean, filter: PaymentFilter) {
 
 function Field({
   label,
-  children
+  children,
+  asLabel = true
 }: {
   label: string;
   children: React.ReactNode;
+  asLabel?: boolean;
 }) {
+  const className = "grid gap-1 text-sm font-semibold text-coal";
+
+  if (!asLabel) {
+    return (
+      <div className={className}>
+        <span>{label}</span>
+        {children}
+      </div>
+    );
+  }
+
   return (
-    <label className="grid gap-1 text-sm font-semibold text-coal">
+    <label className={className}>
       {label}
       {children}
     </label>
@@ -338,7 +315,6 @@ export function AdminPanel({ initialData }: { initialData: AdminPoolData }) {
     testNumber: "",
     testMessage: ""
   });
-  const [whatsappRules, setWhatsappRules] = useState<WhatsappRuleForm[]>([]);
   const [fixturePoolId, setFixturePoolId] = useState(
     initialData.adminPools[0]?.id ?? ""
   );
@@ -1498,7 +1474,7 @@ export function AdminPanel({ initialData }: { initialData: AdminPoolData }) {
                 placeholder="https://bolao.flow-profit.com"
               />
             </Field>
-            <Field label="Número de teste">
+            <Field label="Número de teste" asLabel={false}>
               <WhatsappInput
                 value={whatsappConfig.testNumber}
                 onValueChange={(testNumber) =>
@@ -1952,7 +1928,7 @@ export function AdminPanel({ initialData }: { initialData: AdminPoolData }) {
             <Field label="Novo palpiteiro">
               <TextInput name="name" placeholder="Nome completo" required />
             </Field>
-            <Field label="WhatsApp">
+            <Field label="WhatsApp" asLabel={false}>
               <WhatsappInput
                 name="whatsapp"
                 required
@@ -2047,7 +2023,7 @@ export function AdminPanel({ initialData }: { initialData: AdminPoolData }) {
                     <Field label="Nome">
                       <TextInput name="name" defaultValue={player.name} required />
                     </Field>
-                    <Field label="WhatsApp">
+                    <Field label="WhatsApp" asLabel={false}>
                       <WhatsappInput
                         name="whatsapp"
                         defaultValue={player.whatsappFormatted}

@@ -138,14 +138,14 @@ export function PlayerEntry() {
       <div
         data-login-decor
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-3 z-0 flex h-20 items-start justify-center overflow-hidden sm:hidden"
+        className="pointer-events-none absolute inset-x-0 top-3 z-0 flex h-28 items-start justify-center overflow-hidden sm:hidden"
       >
         <Image
           src="/brand/logos/logo_principal.png"
           alt=""
-          width={180}
-          height={120}
-          className="h-16 w-auto object-contain drop-shadow-sm"
+          width={252}
+          height={168}
+          className="h-[5.6rem] w-auto object-contain drop-shadow-sm"
           priority
         />
       </div>
@@ -172,14 +172,14 @@ export function PlayerEntry() {
           </div>
 
           <form onSubmit={handleIdentify} className="mt-4 grid gap-3 sm:mt-6 sm:gap-4">
-            <label className="grid gap-1 text-sm font-semibold text-coal">
-              WhatsApp
+            <div className="grid gap-1 text-sm font-semibold text-coal">
+              <span>WhatsApp</span>
               <WhatsappInput
                 value={whatsapp}
                 onValueChange={setWhatsapp}
                 required
               />
-            </label>
+            </div>
             <label className="grid gap-1 text-sm font-semibold text-coal">
               Senha de 4 números
               <input

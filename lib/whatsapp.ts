@@ -1,6 +1,7 @@
 import { prisma } from "./prisma";
 import { getSetting, setSetting } from "./settings";
 import { formatBrasiliaDateTime } from "./datetime";
+import { normalizeWhatsapp } from "./phone";
 
 export const WHATSAPP_CONFIG_SETTING = "whatsappEvolutionConfig";
 export const WHATSAPP_NOTIFICATION_RULES_SETTING = "whatsappNotificationRules";
@@ -394,21 +395,11 @@ export function publicWhatsappNotificationRules(
 }
 
 export function formatWhatsappNumber(phone: string) {
-  const explicitCountryCode = phone.trim().startsWith("+");
-  const digits = phone.replace(/\D/g, "");
-
-  if (explicitCountryCode && /^[1-9]\d{7,14}$/.test(digits)) {
-    return digits;
+  try {
+    return normalizeWhatsapp(phone);
+  } catch {
+    return null;
   }
-
-  const withCountryCode =
-    digits.startsWith("55") && (digits.length === 12 || digits.length === 13)
-      ? digits
-      : digits.length === 10 || digits.length === 11
-        ? `55${digits}`
-        : digits;
-
-  return /^[1-9]\d{7,14}$/.test(withCountryCode) ? withCountryCode : null;
 }
 
 function hasSendConfig(config: WhatsappConfig) {

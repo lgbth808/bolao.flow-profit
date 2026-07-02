@@ -3,7 +3,7 @@ import { fail, ok, readJson } from "@/lib/api";
 import { prisma } from "@/lib/prisma";
 import {
   formatBrazilianWhatsapp,
-  normalizeBrazilianWhatsapp
+  normalizeWhatsapp
 } from "@/lib/phone";
 import { hashPlayerPin, isPlayerPinValid, normalizePlayerPin } from "@/lib/player-pin";
 
@@ -18,7 +18,7 @@ const identifySchema = z.object({
 export async function POST(request: Request) {
   try {
     const input = identifySchema.parse(await readJson(request));
-    const whatsapp = normalizeBrazilianWhatsapp(input.whatsapp);
+    const whatsapp = normalizeWhatsapp(input.whatsapp);
     const pin = normalizePlayerPin(input.pin);
     const existing = await prisma.player.findUnique({
       where: { whatsapp },
